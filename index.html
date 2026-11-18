@@ -281,8 +281,17 @@
             </h3>
             <div class="flex items-center gap-2">
               <span id="gif-upload-indicator" class="hidden text-xs font-bold text-cyan-300 animate-pulse">⏳ Memproses GIF...</span>
+              <button id="btn-restore-eliminated" class="hidden px-3 py-1.5 rounded-lg bg-emerald-700/80 hover:bg-emerald-600 text-emerald-100 text-xs font-bold border border-emerald-400/50">♻️ Pulihkan Juara (<span id="eliminated-count-badge">0</span>)</button>
               <button id="btn-clear-all-participants" class="px-3 py-1.5 rounded-lg bg-rose-900/60 hover:bg-rose-800 text-rose-200 text-xs font-bold border border-rose-500/40">🗑️ Hapus Semua</button>
             </div>
+          </div>
+          <!-- Panel Riwayat Juara Sistem Gugur di Setup -->
+          <div id="setup-eliminated-banner" class="hidden mb-3 p-3 rounded-xl bg-amber-950/50 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="font-bold text-amber-300">🏆 Sudah Juara (Tidak Ikut Balapan Berikutnya):</span>
+              <div id="setup-eliminated-list" class="flex flex-wrap gap-1.5"></div>
+            </div>
+            <button id="btn-reset-knockout-setup" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold">🔄 Ikutkan Semua Kembali</button>
           </div>
           <div id="participants-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[560px] overflow-y-auto pr-1">
             <!-- Dynamically populated -->
@@ -414,6 +423,15 @@
               <option value="999">Semua Peringkat</option>
             </select>
           </div>
+          <div class="pt-2 border-t border-slate-700/70">
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-amber-500/40 cursor-pointer">
+              <div>
+                <div class="text-sm font-bold text-amber-300">🏆 Sistem Gugur Undian (Otomatis)</div>
+                <div class="text-[11px] text-slate-400">Juara 1 otomatis tidak ikut di putaran berikutnya saat lanjut balapan</div>
+              </div>
+              <input id="chk-knockout-mode" type="checkbox" checked class="w-5 h-5 accent-amber-400 shrink-0" />
+            </label>
+          </div>
         </div>
 
         <div class="card-cartoon p-4 space-y-4">
@@ -495,6 +513,7 @@
             </div>
 
             <div class="flex items-center gap-2 text-xs">
+              <span id="race-round-badge" class="font-display font-bold px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">Putaran #1</span>
               <span id="race-timer-display" class="font-mono font-bold px-2.5 py-1 rounded bg-slate-800 text-amber-300 border border-slate-700">00.00s</span>
               <span id="race-seed-display" class="hidden sm:inline font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700" title="Seed Deterministik">Seed: -</span>
               <button id="op-audio-btn" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600">🔊</button>
@@ -561,8 +580,14 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center justify-center gap-3">
-        <button id="result-rematch-btn" class="btn-3d px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-display font-bold text-base">
+        <button id="result-next-knockout-btn" class="btn-3d px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-slate-950 font-display font-bold text-base sm:text-lg border-2 border-yellow-200 shadow-xl">
+          ⏭️ LANJUT BALAPAN BERIKUTNYA (Tanpa Juara 1)
+        </button>
+        <button id="result-rematch-btn" class="btn-3d px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-display font-bold text-base">
           🔄 BALAPAN ULANG (Seed Baru)
+        </button>
+        <button id="result-reset-all-btn" class="btn-3d hidden px-5 py-3 rounded-2xl bg-indigo-600 text-white font-display font-bold text-base">
+          ♻️ RESET SEMUA PESERTA AWAL
         </button>
         <button id="result-setup-btn" class="btn-3d px-5 py-3 rounded-2xl bg-slate-700 text-white font-display font-bold text-base">
           ⚙️ KEMBALI KE SETUP
@@ -570,6 +595,20 @@
         <button id="result-save-btn" class="btn-3d px-5 py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-bold text-base">
           💾 SIMPAN HASIL (.CSV)
         </button>
+      </div>
+
+      <!-- Riwayat Juara Undian (Sistem Gugur) -->
+      <div id="result-knockout-history-card" class="hidden card-cartoon p-4 sm:p-5 border-2 border-amber-400/40 bg-slate-900/90">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="font-display text-lg sm:text-xl font-bold text-amber-300">🏅 Daftar Pemenang Undian (Sistem Gugur)</h3>
+            <p class="text-xs text-slate-400">Juara 1 dari setiap putaran yang sudah keluar dari antrean balapan berikutnya.</p>
+          </div>
+          <button id="btn-clear-knockout-history" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-bold">
+            ♻️ Kembalikan Semua ke Balapan
+          </button>
+        </div>
+        <div id="result-knockout-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5"></div>
       </div>
 
       <!-- Full Ranking Table -->
@@ -1023,8 +1062,13 @@
           id: uid('p'),
           name: n,
           gifId: null,
-          color: NINJA_COLORS[idx % NINJA_COLORS.length]
+          color: NINJA_COLORS[idx % NINJA_COLORS.length],
+          eliminated: false,
+          wonRound: null,
+          wonTime: null
         })),
+        knockoutRound: 1,
+        knockoutHistory: [],
         arenas: [arena],
         activeArenaId: arena.id,
         settings: {
@@ -1035,6 +1079,7 @@
           speedVariance: 100,
           obstacleEffect: 100,
           winnerCount: 3,
+          knockoutMode: true,
           aspectRatio: 'fit',
           customAspectRatio: '21:9',
           visualQuality: 'high',
@@ -1075,6 +1120,44 @@
       const col = state.activeCollection;
       if (!col) return createDefaultArena();
       return col.arenas.find(a => a.id === col.activeArenaId) || col.arenas[0];
+    }
+
+    function ensureKnockoutFields(col) {
+      if (!col) return;
+      if (typeof col.knockoutRound !== 'number' || col.knockoutRound < 1) col.knockoutRound = 1;
+      if (!Array.isArray(col.knockoutHistory)) col.knockoutHistory = [];
+      if (col.settings && typeof col.settings.knockoutMode !== 'boolean') {
+        col.settings.knockoutMode = true;
+      }
+      if (Array.isArray(col.participants)) {
+        col.participants.forEach(p => {
+          if (typeof p.eliminated !== 'boolean') p.eliminated = false;
+        });
+      }
+    }
+
+    function getActiveParticipants(col = state.activeCollection) {
+      if (!col || !Array.isArray(col.participants)) return [];
+      ensureKnockoutFields(col);
+      return col.participants.filter(p => !p.eliminated);
+    }
+
+    async function restoreAllEliminatedParticipants() {
+      const col = state.activeCollection;
+      if (!col) return;
+      ensureKnockoutFields(col);
+      col.participants.forEach(p => {
+        p.eliminated = false;
+        p.wonRound = null;
+        p.wonTime = null;
+      });
+      col.knockoutRound = 1;
+      col.knockoutHistory = [];
+      await autoSaveActiveCollection();
+      await renderSetupParticipants();
+      if (state.currentPage === 'result') renderResultPage();
+      if (state.currentPage === 'arena') prepareArenaPage();
+      showToast('Semua juara telah dikembalikan ke daftar peserta aktif!', 'success');
     }
 
     async function validateGifFile(file) {
@@ -1501,8 +1584,9 @@
       const col = state.activeCollection;
       const arena = getActiveArena();
       const prng = state.race.prng;
+      const activeList = getActiveParticipants(col);
 
-      state.race.runners = col.participants.map((p, idx) => ({
+      state.race.runners = activeList.map((p, idx) => ({
         id: p.id,
         name: p.name,
         gifId: p.gifId,
@@ -1923,6 +2007,12 @@
       const customSeed = document.getElementById('input-custom-seed')?.value?.trim();
       state.race.seed = customSeed || generateRaceSeed();
       state.race.prng = createPRNG(state.race.seed);
+      ensureKnockoutFields(state.activeCollection);
+      const roundBadge = document.getElementById('race-round-badge');
+      if (roundBadge) {
+        const activeCnt = getActiveParticipants().length;
+        roundBadge.textContent = `Putaran #${state.activeCollection?.knockoutRound || 1} (${activeCnt} Peserta)`;
+      }
       document.getElementById('race-seed-display').textContent = `Seed: ${state.race.seed}`;
       document.getElementById('winner-spotlight-banner').classList.add('hidden');
       document.getElementById('countdown-overlay').classList.add('hidden');
@@ -1940,8 +2030,14 @@
     }
 
     function startCountdownAndRace() {
-      if (!state.activeCollection || state.activeCollection.participants.length < 2) {
-        showToast('Minimal 2 peserta untuk memulai balapan!', 'warning');
+      const activeList = getActiveParticipants();
+      if (!state.activeCollection || activeList.length < 2) {
+        const elimCount = (state.activeCollection?.participants?.length || 0) - activeList.length;
+        if (elimCount > 0) {
+          showToast('Peserta aktif tersisa kurang dari 2! Pulihkan peserta atau tambah peserta di Setup.', 'warning');
+        } else {
+          showToast('Minimal 2 peserta untuk memulai balapan!', 'warning');
+        }
         navigateTo('setup');
         return;
       }
@@ -2058,8 +2154,11 @@
     // 11. RESULT PAGE RENDERING & EXPORT
     // =========================================================================
     function renderResultPage() {
+      const col = state.activeCollection;
+      ensureKnockoutFields(col);
       const order = [...state.race.finishedOrder].sort((a, b) => a.finishTime - b.finishTime);
-      document.getElementById('result-seed-info').textContent = `Seed Simulasi: ${state.race.seed} • Total Peserta: ${order.length}`;
+      const currentRound = col?.knockoutRound || 1;
+      document.getElementById('result-seed-info').textContent = `Putaran #${currentRound} • Seed Simulasi: ${state.race.seed} • Peserta Putaran Ini: ${order.length}`;
 
       const podiumEl = document.getElementById('podium-container');
       podiumEl.innerHTML = '';
@@ -2110,6 +2209,76 @@
         `;
         tbody.appendChild(tr);
       });
+
+      // Update Knockout Button & History Panel
+      const winner = order[0];
+      const nextBtn = document.getElementById('result-next-knockout-btn');
+      const resetAllBtn = document.getElementById('result-reset-all-btn');
+      const historyCard = document.getElementById('result-knockout-history-card');
+      const historyList = document.getElementById('result-knockout-list');
+
+      // Calculate remaining if winner is eliminated
+      const activeNow = getActiveParticipants(col);
+      const remainingAfterWinner = activeNow.filter(p => !winner || p.id !== winner.id).length;
+
+      if (nextBtn) {
+        if (winner && remainingAfterWinner >= 2) {
+          nextBtn.classList.remove('hidden');
+          nextBtn.disabled = false;
+          nextBtn.innerHTML = `⏭️ LANJUT PUTARAN #${currentRound + 1} (Tanpa Juara 1: ${winner.name} • Sisa ${remainingAfterWinner} Peserta)`;
+        } else if (winner && remainingAfterWinner === 1) {
+          const lastRunner = order[1];
+          nextBtn.classList.remove('hidden');
+          nextBtn.disabled = true;
+          nextBtn.innerHTML = `🏁 UNDIAN SELESAI (Tersisa 1 Peserta Terakhir: ${lastRunner ? lastRunner.name : '-'})`;
+        } else {
+          nextBtn.classList.add('hidden');
+        }
+      }
+
+      const hasEliminated = col.participants.some(p => p.eliminated) || (col.knockoutHistory && col.knockoutHistory.length > 0);
+      if (resetAllBtn) {
+        resetAllBtn.classList.toggle('hidden', !hasEliminated && remainingAfterWinner >= 2);
+      }
+
+      if (historyCard && historyList) {
+        const previewHistory = [...(col.knockoutHistory || [])];
+        if (winner && !previewHistory.some(h => h.participantId === winner.id)) {
+          previewHistory.push({
+            round: currentRound,
+            participantId: winner.id,
+            name: winner.name,
+            color: winner.color,
+            gifId: winner.gifId,
+            finishTime: winner.finishTime,
+            seed: state.race.seed,
+            pendingCurrent: true
+          });
+        }
+
+        if (previewHistory.length > 0) {
+          historyCard.classList.remove('hidden');
+          historyList.innerHTML = '';
+          previewHistory.forEach((h) => {
+            const item = document.createElement('div');
+            item.className = `p-2.5 rounded-xl border flex items-center gap-2.5 ${h.pendingCurrent ? 'bg-amber-500/20 border-amber-400' : 'bg-slate-800/90 border-slate-700'}`;
+            const av = h.gifId && state.gifUrlCache.has(h.gifId)
+              ? `<img src="${state.gifUrlCache.get(h.gifId)}" class="w-9 h-9 object-contain rounded bg-white/80 p-0.5 shrink-0" />`
+              : `<div class="w-9 h-9 rounded bg-slate-900 p-0.5 shrink-0">${createNinjaSvg(h.color || '#f59e0b')}</div>`;
+            item.innerHTML = `
+              ${av}
+              <div class="min-w-0 flex-1">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300">🏆 Juara Putaran #${h.round}</div>
+                <div class="font-display font-bold text-sm text-white truncate">${h.name}</div>
+                <div class="text-[11px] font-mono text-slate-400">${Number(h.finishTime).toFixed(3)}s</div>
+              </div>
+            `;
+            historyList.appendChild(item);
+          });
+        } else {
+          historyCard.classList.add('hidden');
+        }
+      }
     }
 
     function downloadRaceResultsCsv() {
@@ -2134,10 +2303,39 @@
     async function renderSetupParticipants() {
       const col = state.activeCollection;
       if (!col) return;
-      document.getElementById('participant-count-label').textContent = col.participants.length;
-      document.getElementById('home-participant-summary').textContent = `${col.participants.length} Peserta Siap`;
+      ensureKnockoutFields(col);
+      const activeCount = getActiveParticipants(col).length;
+      const elimParticipants = col.participants.filter(p => p.eliminated);
+      const elimCount = elimParticipants.length;
+
+      document.getElementById('participant-count-label').textContent = elimCount > 0
+        ? `${activeCount} Aktif / ${col.participants.length} Total`
+        : `${col.participants.length}`;
+      document.getElementById('home-participant-summary').textContent = elimCount > 0
+        ? `${activeCount} Peserta Siap (${elimCount} Sudah Juara)`
+        : `${col.participants.length} Peserta Siap`;
       document.getElementById('setup-collection-name').textContent = col.name;
       document.querySelector('#active-collection-badge span').textContent = col.name;
+
+      const restoreBtn = document.getElementById('btn-restore-eliminated');
+      const elimBadge = document.getElementById('eliminated-count-badge');
+      const elimBanner = document.getElementById('setup-eliminated-banner');
+      const elimListEl = document.getElementById('setup-eliminated-list');
+
+      if (restoreBtn && elimBadge) {
+        restoreBtn.classList.toggle('hidden', elimCount === 0);
+        elimBadge.textContent = elimCount;
+      }
+      if (elimBanner && elimListEl) {
+        elimBanner.classList.toggle('hidden', elimCount === 0);
+        elimListEl.innerHTML = '';
+        elimParticipants.forEach(ep => {
+          const pill = document.createElement('span');
+          pill.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-200 font-semibold';
+          pill.innerHTML = `🏅 ${ep.name}${ep.wonRound ? ` (P#${ep.wonRound})` : ''}`;
+          elimListEl.appendChild(pill);
+        });
+      }
 
       const grid = document.getElementById('participants-grid');
       grid.innerHTML = '';
@@ -2145,7 +2343,11 @@
       for (let idx = 0; idx < col.participants.length; idx++) {
         const p = col.participants[idx];
         const card = document.createElement('div');
-        card.className = 'p-3 rounded-xl bg-slate-900/85 border border-slate-700 flex flex-col gap-2';
+        card.className = `p-3 rounded-xl border flex flex-col gap-2 transition ${
+          p.eliminated
+            ? 'bg-slate-950/60 border-amber-500/40 opacity-75'
+            : 'bg-slate-900/85 border-slate-700'
+        }`;
 
         const previewBox = document.createElement('div');
         previewBox.className = 'h-20 rounded-lg bg-slate-800/80 border border-slate-700 flex items-center justify-center p-1.5 overflow-hidden relative';
@@ -2235,7 +2437,24 @@
           renderSetupParticipants();
         });
 
-        rightBtns.append(upBtn, downBtn, delBtn);
+        const statusBtn = document.createElement('button');
+        statusBtn.className = p.eliminated
+          ? 'px-2 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold'
+          : 'px-1.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30';
+        statusBtn.title = p.eliminated ? 'Sudah Juara (Klik untuk ikutkan kembali)' : 'Peserta Aktif (Klik untuk tandai sudah juara/istirahat)';
+        statusBtn.textContent = p.eliminated ? '🏆 Juara (Pulihkan)' : '✅ Aktif';
+        statusBtn.addEventListener('click', async () => {
+          p.eliminated = !p.eliminated;
+          if (!p.eliminated) {
+            p.wonRound = null;
+            p.wonTime = null;
+            col.knockoutHistory = (col.knockoutHistory || []).filter(h => h.participantId !== p.id);
+          }
+          await autoSaveActiveCollection();
+          renderSetupParticipants();
+        });
+
+        rightBtns.append(statusBtn, upBtn, downBtn, delBtn);
         controls.append(gifLabel, rightBtns);
         card.append(previewBox, nameInput, controls);
         grid.appendChild(card);
@@ -2285,7 +2504,10 @@
       document.getElementById('range-obstacle-effect').value = s.obstacleEffect;
       document.getElementById('val-obstacle-effect').textContent = `${s.obstacleEffect}%`;
 
+      ensureKnockoutFields(col);
       document.getElementById('select-winner-count').value = String(s.winnerCount);
+      const koChk = document.getElementById('chk-knockout-mode');
+      if (koChk) koChk.checked = s.knockoutMode !== false;
       document.getElementById('select-aspect-ratio').value = s.aspectRatio;
       document.getElementById('custom-ratio-wrap').classList.toggle('hidden', s.aspectRatio !== 'custom');
       document.getElementById('input-custom-ratio').value = s.customAspectRatio || '21:9';
@@ -2776,6 +2998,59 @@
       document.getElementById('setup-fullscreen-btn').addEventListener('click', () => {
         navigateTo('arena');
         setTimeout(toggleFullscreen, 150);
+      });
+
+      // Knockout & Restore Buttons
+      document.getElementById('chk-knockout-mode')?.addEventListener('change', (e) => {
+        state.activeCollection.settings.knockoutMode = e.target.checked;
+        autoSaveActiveCollection();
+      });
+      document.getElementById('btn-restore-eliminated')?.addEventListener('click', restoreAllEliminatedParticipants);
+      document.getElementById('btn-reset-knockout-setup')?.addEventListener('click', restoreAllEliminatedParticipants);
+      document.getElementById('btn-clear-knockout-history')?.addEventListener('click', restoreAllEliminatedParticipants);
+      document.getElementById('result-reset-all-btn')?.addEventListener('click', async () => {
+        await restoreAllEliminatedParticipants();
+        navigateTo('arena');
+      });
+
+      // Next Knockout Round Button (Eliminate Juara 1 & Continue Race)
+      document.getElementById('result-next-knockout-btn')?.addEventListener('click', async () => {
+        const col = state.activeCollection;
+        if (!col) return;
+        ensureKnockoutFields(col);
+        const order = [...state.race.finishedOrder].sort((a, b) => a.finishTime - b.finishTime);
+        const winner = order[0];
+        if (winner) {
+          const targetP = col.participants.find(p => p.id === winner.id);
+          if (targetP && !targetP.eliminated) {
+            targetP.eliminated = true;
+            targetP.wonRound = col.knockoutRound || 1;
+            targetP.wonTime = winner.finishTime;
+          }
+          if (!col.knockoutHistory.some(h => h.participantId === winner.id)) {
+            col.knockoutHistory.push({
+              round: col.knockoutRound || 1,
+              participantId: winner.id,
+              name: winner.name,
+              color: winner.color,
+              gifId: winner.gifId,
+              finishTime: winner.finishTime,
+              seed: state.race.seed
+            });
+          }
+          col.knockoutRound = (col.knockoutRound || 1) + 1;
+          await autoSaveActiveCollection();
+          await renderSetupParticipants();
+        }
+        const remaining = getActiveParticipants(col);
+        if (remaining.length < 2) {
+          showToast('Peserta aktif tersisa kurang dari 2 orang. Undian selesai!', 'info');
+          renderResultPage();
+          return;
+        }
+        showToast(`Juara 1 (${winner?.name}) disimpan! Melanjutkan Putaran #${col.knockoutRound} dengan ${remaining.length} peserta...`, 'success');
+        navigateTo('arena');
+        setTimeout(() => startCountdownAndRace(), 150);
       });
 
       // Result Buttons
