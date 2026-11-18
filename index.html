@@ -1,0 +1,2867 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BALAP DESA JUWANGI — Ninja Race Challenge</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-display: 'Fredoka', sans-serif;
+      --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-display {
+      font-family: var(--font-display);
+    }
+    .btn-3d {
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-3d:hover:not(:disabled) {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+    }
+    .btn-3d:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+    }
+    .btn-3d:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .card-cartoon {
+      background: rgba(30, 41, 59, 0.92);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border-radius: 1.25rem;
+    }
+    /* Runner animations */
+    @keyframes runBob {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(2deg); }
+    }
+    @keyframes slipWobble {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(-16deg) scale(0.95); }
+      75% { transform: rotate(14deg) scale(0.95); }
+    }
+    @keyframes victoryBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.08); }
+    }
+    @keyframes homeFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes countdownPop {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.18); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .anim-run-bob {
+      animation: runBob 0.28s ease-in-out infinite;
+    }
+    .anim-slip {
+      animation: slipWobble 0.22s ease-in-out infinite;
+    }
+    .anim-victory {
+      animation: victoryBounce 0.5s ease-in-out infinite;
+    }
+    .anim-home-float {
+      animation: homeFloat 3.2s ease-in-out infinite;
+    }
+    .anim-countdown {
+      animation: countdownPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    /* Fullscreen operator auto-hide */
+    #race-stage-wrapper:fullscreen .operator-bar-auto {
+      opacity: 0;
+      transform: translateY(-100%);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    #race-stage-wrapper:fullscreen .operator-hover-zone:hover .operator-bar-auto,
+    #race-stage-wrapper:fullscreen .operator-bar-auto.force-show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.65); }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- TOP NAVIGATION BAR (Hidden in Fullscreen) -->
+  <header id="main-header" class="bg-slate-900/90 backdrop-blur border-b border-slate-700/70 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
+      <button id="nav-brand-btn" class="flex items-center gap-2.5 text-left group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md border-2 border-amber-200/60 group-hover:scale-105 transition-transform">
+          <span class="text-lg">🐎</span>
+        </div>
+        <div>
+          <div class="font-display font-bold text-sm sm:text-base leading-tight text-amber-300 tracking-wide">BALAP DESA JUWANGI</div>
+          <div class="text-[10px] sm:text-xs text-emerald-300 font-semibold tracking-wider leading-none">NINJA RACE CHALLENGE</div>
+        </div>
+      </button>
+
+      <nav class="flex items-center gap-1 sm:gap-2">
+        <button data-nav="home" class="nav-pill px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-800 text-slate-200 hover:bg-slate-700">🏠 Home</button>
+        <button data-nav="setup" class="nav-pill px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-800 text-slate-200 hover:bg-slate-700">⚙️ Setup</button>
+        <button data-nav="arena" class="nav-pill px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-800 text-slate-200 hover:bg-slate-700">🏁 Arena</button>
+        <button data-nav="result" class="nav-pill px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-800 text-slate-200 hover:bg-slate-700">🏆 Hasil</button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <span id="active-collection-badge" class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-950/80 border border-indigo-500/40 text-indigo-200 text-xs font-semibold max-w-[170px] truncate">
+          📁 <span>Balap Desa</span>
+        </span>
+        <button id="header-audio-btn" title="Audio On/Off" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-sm">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- STORAGE / WARNING BANNER -->
+  <div id="storage-warning-banner" class="hidden bg-amber-500/20 border-b border-amber-400/50 text-amber-200 px-4 py-2 text-xs sm:text-sm text-center font-semibold">
+    ⚠️ <span id="storage-warning-text">Penyimpanan browser hampir penuh. Pertimbangkan mengekspor atau menghapus koleksi lama.</span>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- ==================== PAGE 1: HOME ==================== -->
+    <section id="page-home" class="page-section flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
+      <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Left: Logo & Action Buttons -->
+        <div class="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-5">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold tracking-wider uppercase">
+            <span>📍 Lapangan Gebyok, Desa Juwangi</span>
+          </div>
+
+          <div class="space-y-1">
+            <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-400 drop-shadow-md leading-tight">
+              BALAP DESA JUWANGI
+            </h1>
+            <p class="font-display text-xl sm:text-2xl text-cyan-300 tracking-widest font-semibold">
+              NINJA RACE CHALLENGE
+            </p>
+          </div>
+
+          <p class="text-slate-300 text-sm sm:text-base max-w-lg leading-relaxed">
+            Aplikasi undian &amp; balapan karakter kartun 3D modern berlatar Lapangan Gebyok. Unggah GIF ninja kustom, hadapi 3 rintangan seru, dan tentukan pemenang secara adil dengan mesin simulasi acak deterministik!
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md pt-1">
+            <button id="home-start-btn" class="btn-3d sm:col-span-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-display font-bold text-xl tracking-wide flex items-center justify-center gap-2 border-2 border-emerald-300/60">
+              <span>🏁</span> MULAI BALAPAN
+            </button>
+            <button id="home-collections-btn" class="btn-3d py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-display font-bold text-base flex items-center justify-center gap-2 border border-indigo-300/50">
+              <span>📁</span> KELOLA KOLEKSI
+            </button>
+            <button id="home-setup-btn" class="btn-3d py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-display font-bold text-base flex items-center justify-center gap-2 border border-amber-200/70">
+              <span>⚙️</span> PENGATURAN
+            </button>
+            <button id="home-guide-btn" class="btn-3d sm:col-span-2 py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-100 font-display font-semibold text-sm flex items-center justify-center gap-2 border border-slate-500/60">
+              <span>📖</span> PANDUAN &amp; ATURAN MAIN
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Animated Lapangan Gebyok & Patung Kuda Illustration -->
+        <div class="lg:col-span-6">
+          <div class="card-cartoon p-3 sm:p-4 relative overflow-hidden">
+            <canvas id="home-hero-canvas" class="w-full h-64 sm:h-80 rounded-xl block bg-sky-400"></canvas>
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300 px-1">
+              <span class="flex items-center gap-1.5 font-semibold text-amber-300">🐎 Ikon: Patung Kuda Lapangan Gebyok</span>
+              <span id="home-participant-summary" class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 font-semibold">8 Peserta Siap</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: SETUP PERLOMBAAN ==================== -->
+    <section id="page-setup" class="page-section hidden flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-amber-300">⚙️ Setup Perlombaan</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Kelola peserta, unggah GIF karakter, atur arena Lapangan Gebyok, dan konfigurasi balapan.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="setup-open-collections-btn" class="btn-3d px-3.5 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5">
+            📁 Koleksi: <span id="setup-collection-name">Balap Desa</span>
+          </button>
+          <button id="setup-preview-btn" class="btn-3d px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs sm:text-sm">
+            👁️ PREVIEW ARENA
+          </button>
+          <button id="setup-start-race-btn" class="btn-3d px-5 py-2 rounded-xl bg-emerald-500 text-white font-display font-bold text-xs sm:text-sm">
+            🏁 MULAI BALAPAN
+          </button>
+        </div>
+      </div>
+
+      <!-- Setup Sub-Tabs -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-700 pb-3">
+        <button data-setup-tab="participants" class="setup-tab-btn px-4 py-2 rounded-xl font-display font-bold text-sm bg-amber-500 text-slate-950">👥 Peserta &amp; GIF</button>
+        <button data-setup-tab="arena" class="setup-tab-btn px-4 py-2 rounded-xl font-display font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700">🏟️ Arena &amp; Rintangan</button>
+        <button data-setup-tab="race" class="setup-tab-btn px-4 py-2 rounded-xl font-display font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700">⚡ Perlombaan &amp; Layar</button>
+        <button data-setup-tab="audio" class="setup-tab-btn px-4 py-2 rounded-xl font-display font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700">🔊 Audio</button>
+      </div>
+
+      <!-- TAB 1: PARTICIPANTS & GIF -->
+      <div id="setup-tab-participants" class="setup-tab-panel grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Left Controls -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="card-cartoon p-4 space-y-3">
+            <h3 class="font-display text-lg font-bold text-emerald-300">➕ Tambah Peserta</h3>
+            <div class="flex gap-2">
+              <input id="input-single-name" type="text" placeholder="Nama peserta..." class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white focus:outline-none focus:border-amber-400" />
+              <button id="btn-add-single" class="btn-3d px-4 py-2 rounded-xl bg-emerald-500 text-white font-bold text-sm">Tambah</button>
+            </div>
+            <div class="pt-2 border-t border-slate-700/70 space-y-2">
+              <label class="text-xs font-bold text-slate-300 block">Tambah Massal (1 nama per baris):</label>
+              <textarea id="input-bulk-names" rows="4" placeholder="Contoh:&#10;Andi&#10;Budi&#10;Citra" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-xs text-white focus:outline-none focus:border-amber-400"></textarea>
+              <div class="flex flex-wrap gap-2">
+                <button id="btn-add-bulk" class="btn-3d flex-1 py-2 px-3 rounded-xl bg-blue-600 text-white font-bold text-xs">Tambah Massal</button>
+                <label class="btn-3d py-2 px-3 rounded-xl bg-slate-700 text-slate-200 font-bold text-xs cursor-pointer text-center">
+                  📄 Import .TXT/.CSV
+                  <input id="input-import-names-file" type="file" accept=".txt,.csv" class="hidden" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-cartoon p-4 space-y-3">
+            <h3 class="font-display text-lg font-bold text-cyan-300">📏 Ukuran Karakter &amp; Nama</h3>
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span>Ukuran Karakter</span>
+                <span id="val-char-size" class="text-amber-300">100%</span>
+              </div>
+              <input id="range-char-size" type="range" min="50" max="160" value="100" class="w-full accent-amber-400" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span>Ukuran Tulisan Nama</span>
+                <span id="val-name-size" class="text-amber-300">100%</span>
+              </div>
+              <input id="range-name-size" type="range" min="70" max="160" value="100" class="w-full accent-amber-400" />
+            </div>
+            <div class="pt-2 border-t border-slate-700/70">
+              <label class="btn-3d w-full py-2.5 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer">
+                <span>🎞️</span> Upload Banyak GIF Sekaligus
+                <input id="input-bulk-gifs" type="file" accept="image/gif" multiple class="hidden" />
+              </label>
+              <p class="text-[11px] text-slate-400 mt-1.5">Setiap file GIF akan otomatis membuat peserta baru (berdasarkan nama file) atau bisa dipasang ke peserta yang ada.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Participant List & GIF Preview -->
+        <div class="lg:col-span-8 card-cartoon p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 class="font-display text-lg font-bold text-amber-300">
+              Daftar Peserta (<span id="participant-count-label">0</span>)
+            </h3>
+            <div class="flex items-center gap-2">
+              <span id="gif-upload-indicator" class="hidden text-xs font-bold text-cyan-300 animate-pulse">⏳ Memproses GIF...</span>
+              <button id="btn-clear-all-participants" class="px-3 py-1.5 rounded-lg bg-rose-900/60 hover:bg-rose-800 text-rose-200 text-xs font-bold border border-rose-500/40">🗑️ Hapus Semua</button>
+            </div>
+          </div>
+          <div id="participants-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[560px] overflow-y-auto pr-1">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ARENA & OBSTACLES -->
+      <div id="setup-tab-arena" class="setup-tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-5 card-cartoon p-4 space-y-4">
+          <h3 class="font-display text-lg font-bold text-amber-300">🏟️ Manajemen Arena</h3>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-300">Pilih Arena Tersimpan:</label>
+            <div class="flex gap-2">
+              <select id="select-arena" class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white"></select>
+              <button id="btn-new-arena" class="btn-3d px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">+ Baru</button>
+              <button id="btn-rename-arena" class="btn-3d px-3 py-2 rounded-xl bg-slate-700 text-white text-xs font-bold">✏️ Ganti Nama</button>
+            </div>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-slate-700/70">
+            <label class="text-xs font-bold text-slate-300">Tema Visual Lapangan Gebyok:</label>
+            <select id="select-arena-theme" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white">
+              <option value="morning">☀️ Cerah Pagi Desa Juwangi</option>
+              <option value="sunset">🌅 Senja Emas Gebyok</option>
+              <option value="festival">🏮 Festival Lomba Desa</option>
+              <option value="night">🌙 Malam Semarak Desa</option>
+            </select>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-slate-700/70">
+            <label class="text-xs font-bold text-slate-300 block">Dekorasi Arena:</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input id="chk-deco-spectators" type="checkbox" class="w-4 h-4 accent-emerald-500" />
+              <span>👥 Penonton Desa (Dekorasi Sorak)</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input id="chk-deco-flags" type="checkbox" class="w-4 h-4 accent-emerald-500" />
+              <span>🚩 Ornamen &amp; Bendera Perlombaan</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input id="chk-deco-signboard" type="checkbox" class="w-4 h-4 accent-emerald-500" />
+              <span>🪧 Papan "BALAP DESA JUWANGI"</span>
+            </label>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>Ukuran / Lebar Lajur Lintasan</span>
+              <span id="val-track-padding" class="text-amber-300">Normal</span>
+            </div>
+            <input id="range-track-padding" type="range" min="1" max="3" step="1" value="2" class="w-full accent-amber-400" />
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 card-cartoon p-4 space-y-4">
+          <h3 class="font-display text-lg font-bold text-cyan-300">🚧 Posisi Tiga Rintangan Tetap</h3>
+          <p class="text-xs text-slate-400">Semua peserta melewati tiga rintangan yang sama. Efek bersifat acak dan adil untuk semua peserta.</p>
+
+          <div class="space-y-4">
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700">
+              <div class="flex justify-between text-sm font-bold text-amber-300 mb-1">
+                <span>🪵 Rintangan 1: Kayu Tumbang</span>
+                <span id="val-obs-1">25%</span>
+              </div>
+              <input id="range-obs-1" type="range" min="15" max="35" value="25" class="w-full accent-amber-400" />
+              <p class="text-[11px] text-slate-400 mt-1">Karakter melompati kayu besar melintang dengan efek debu saat mendarat.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700">
+              <div class="flex justify-between text-sm font-bold text-orange-300 mb-1">
+                <span>🟤 Rintangan 2: Kubangan Lumpur</span>
+                <span id="val-obs-2">52%</span>
+              </div>
+              <input id="range-obs-2" type="range" min="40" max="65" value="52" class="w-full accent-orange-400" />
+              <p class="text-[11px] text-slate-400 mt-1">Karakter melompat atau terpeleset dengan efek percikan lumpur.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700">
+              <div class="flex justify-between text-sm font-bold text-cyan-300 mb-1">
+                <span>🌀 Rintangan 3: Penghalang Berputar</span>
+                <span id="val-obs-3">78%</span>
+              </div>
+              <input id="range-obs-3" type="range" min="70" max="88" value="78" class="w-full accent-cyan-400" />
+              <p class="text-[11px] text-slate-400 mt-1">Penghalang berputar yang harus dihindari atau dilompati sebelum garis finish.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: RACE & DISPLAY SETTINGS -->
+      <div id="setup-tab-race" class="setup-tab-panel hidden grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="card-cartoon p-4 space-y-4">
+          <h3 class="font-display text-lg font-bold text-emerald-300">⚡ Pengaturan Simulasi Perlombaan</h3>
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>Durasi Countdown</span>
+              <span id="val-countdown-sec" class="text-amber-300">3 Detik</span>
+            </div>
+            <input id="range-countdown-sec" type="range" min="1" max="5" value="3" class="w-full accent-emerald-400" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>Kecepatan Dasar Balapan</span>
+              <span id="val-base-speed" class="text-amber-300">Normal (1.0x)</span>
+            </div>
+            <input id="range-base-speed" type="range" min="60" max="160" value="100" class="w-full accent-emerald-400" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>Intensitas Variasi Kecepatan (Saling Salip)</span>
+              <span id="val-speed-variance" class="text-amber-300">100%</span>
+            </div>
+            <input id="range-speed-variance" type="range" min="30" max="180" value="100" class="w-full accent-emerald-400" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>Efek Rintangan</span>
+              <span id="val-obstacle-effect" class="text-amber-300">100%</span>
+            </div>
+            <input id="range-obstacle-effect" type="range" min="0" max="150" value="100" class="w-full accent-emerald-400" />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Jumlah Pemenang Ditampilkan:</label>
+            <select id="select-winner-count" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white">
+              <option value="1">Juara 1 Saja</option>
+              <option value="3" selected>Podium Top 3 (Juara 1, 2, 3)</option>
+              <option value="5">Top 5</option>
+              <option value="999">Semua Peringkat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-cartoon p-4 space-y-4">
+          <h3 class="font-display text-lg font-bold text-cyan-300">🖥️ Pengaturan Layar &amp; Kualitas</h3>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Rasio Layar Arena:</label>
+            <select id="select-aspect-ratio" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white">
+              <option value="fit">Fit to Screen (Otomatis)</option>
+              <option value="16:9">Laptop / IFP 75" (16:9)</option>
+              <option value="16:10">Laptop Widescreen (16:10)</option>
+              <option value="4:3">Proyektor Klasik (4:3)</option>
+              <option value="custom">Kustom (Contoh: 21:9)</option>
+            </select>
+            <div id="custom-ratio-wrap" class="hidden mt-2 flex items-center gap-2">
+              <input id="input-custom-ratio" type="text" placeholder="21:9" value="21:9" class="w-28 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-600 text-xs text-white" />
+              <span class="text-[11px] text-slate-400">Format Lebar:Tinggi (misal 21:9)</span>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Audit / Reproduksi Seed (Opsional):</label>
+            <input id="input-custom-seed" type="text" placeholder="Kosongkan untuk acak otomatis (misal BDJ-XXXXXX)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-xs font-mono text-white" />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Kualitas Visual &amp; Partikel:</label>
+            <select id="select-visual-quality" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white">
+              <option value="high">Tinggi (Partikel Penuh + Efek Halus)</option>
+              <option value="medium">Sedang (Optimal untuk Banyak Peserta)</option>
+              <option value="low">Hemat Memori (Ringan untuk Laptop 8GB / 30+ Peserta)</option>
+            </select>
+          </div>
+          <div class="pt-2">
+            <button id="setup-fullscreen-btn" class="btn-3d w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm">
+              ⛶ Uji Mode Fullscreen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: AUDIO -->
+      <div id="setup-tab-audio" class="setup-tab-panel hidden card-cartoon p-5 max-w-xl space-y-4">
+        <h3 class="font-display text-lg font-bold text-amber-300">🔊 Pengaturan Audio</h3>
+        <div>
+          <div class="flex justify-between text-xs font-semibold mb-1">
+            <span>Master Volume</span>
+            <span id="val-master-vol" class="text-amber-300">80%</span>
+          </div>
+          <input id="range-master-vol" type="range" min="0" max="100" value="80" class="w-full accent-amber-400" />
+        </div>
+        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-700 cursor-pointer">
+          <span class="text-sm font-bold">🎵 Musik Latar (Pembuka, Balapan, Podium)</span>
+          <input id="chk-music-on" type="checkbox" checked class="w-5 h-5 accent-emerald-500" />
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-700 cursor-pointer">
+          <span class="text-sm font-bold">💥 Efek Suara (Countdown, Langkah, Rintangan, Sorak)</span>
+          <input id="chk-sfx-on" type="checkbox" checked class="w-5 h-5 accent-emerald-500" />
+        </label>
+        <button id="btn-test-audio" class="btn-3d px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm">🔔 Uji Suara Aba-Aba</button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: RACE ARENA ==================== -->
+    <section id="page-arena" class="page-section hidden flex-1 flex flex-col p-1 sm:p-2 w-full h-[calc(100vh-3.5rem)]">
+      <div id="race-stage-wrapper" class="relative flex-1 flex flex-col bg-slate-950 rounded-xl border border-slate-700/80 overflow-hidden shadow-2xl h-full">
+
+        <!-- Touch Toggle for Operator Bar in Fullscreen (IFP Friendly) -->
+        <button id="op-touch-toggle-btn" title="Tampilkan/Sembunyikan Kontrol Operator (O)" class="hidden fixed top-2 right-2 z-50 px-2.5 py-1 rounded-lg bg-slate-900/75 hover:bg-slate-800 text-amber-300 border border-amber-400/40 text-xs font-bold backdrop-blur">
+          🎛️ Operator
+        </button>
+        <!-- Operator Bar (Auto-hides in Fullscreen, hover top to reveal) -->
+        <div class="operator-hover-zone relative z-30">
+          <div id="operator-bar" class="operator-bar-auto bg-slate-900/95 backdrop-blur border-b border-slate-700/80 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <button id="op-start-btn" class="btn-3d px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-display font-bold text-xs sm:text-sm">▶ Mulai</button>
+              <button id="op-pause-btn" class="btn-3d hidden px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-display font-bold text-xs sm:text-sm">⏸ Jeda</button>
+              <button id="op-resume-btn" class="btn-3d hidden px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-display font-bold text-xs sm:text-sm">▶ Lanjutkan</button>
+              <button id="op-restart-btn" class="btn-3d px-3 py-1.5 rounded-lg bg-blue-600 text-white font-display font-bold text-xs sm:text-sm">🔄 Ulangi</button>
+              <button id="op-cancel-btn" class="btn-3d px-3 py-1.5 rounded-lg bg-rose-600 text-white font-display font-bold text-xs sm:text-sm">✖ Batalkan</button>
+              <button id="op-setup-btn" class="btn-3d px-3 py-1.5 rounded-lg bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm">⚙️ Setup</button>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              <span id="race-timer-display" class="font-mono font-bold px-2.5 py-1 rounded bg-slate-800 text-amber-300 border border-slate-700">00.00s</span>
+              <span id="race-seed-display" class="hidden sm:inline font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700" title="Seed Deterministik">Seed: -</span>
+              <button id="op-audio-btn" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600">🔊</button>
+              <button id="op-fullscreen-btn" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold">⛶ Fullscreen</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arena Viewport Container -->
+        <div id="arena-viewport" class="relative flex-1 flex items-center justify-center bg-slate-950 overflow-hidden" style="min-height: clamp(420px, calc(100vh - 8.5rem), 96vh);">
+          <div id="arena-aspect-box" class="relative w-full h-full overflow-hidden shadow-inner bg-sky-400" style="min-height: 420px;">
+            <!-- Background Canvas (Lapangan Gebyok, Patung Kuda, Lanes, Obstacles) -->
+            <canvas id="arena-bg-canvas" class="absolute inset-0 w-full h-full block"></canvas>
+
+            <!-- DOM Runners Layer (Preserves Native GIF Animation & Transparency) -->
+            <div id="arena-runners-layer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+            <!-- Particle & Confetti FX Canvas -->
+            <canvas id="arena-fx-canvas" class="absolute inset-0 w-full h-full block pointer-events-none"></canvas>
+
+            <!-- Countdown Overlay -->
+            <div id="countdown-overlay" class="hidden absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none">
+              <div id="countdown-text" class="font-display font-bold text-6xl sm:text-8xl lg:text-9xl text-amber-300 drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] tracking-wider text-center px-4">
+                SIAP-SIAP!
+              </div>
+            </div>
+
+            <!-- Juara 1 Live Spotlight Overlay (While others still finish) -->
+            <div id="winner-spotlight-banner" class="hidden absolute top-3 right-3 z-20 bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500 text-slate-950 px-4 py-2.5 rounded-2xl border-2 border-white shadow-2xl flex items-center gap-3 pointer-events-none">
+              <div id="spotlight-avatar" class="w-14 h-14 rounded-xl bg-white/80 flex items-center justify-center overflow-hidden border-2 border-amber-700 shrink-0"></div>
+              <div>
+                <div class="font-display font-bold text-xs uppercase tracking-widest text-amber-950">🏆 JUARA 1 TERCAPAI!</div>
+                <div id="spotlight-name" class="font-display font-bold text-2xl sm:text-3xl leading-none">NAMA</div>
+              </div>
+            </div>
+
+            <!-- Paused Overlay -->
+            <div id="paused-overlay" class="hidden absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+              <div class="font-display font-bold text-4xl sm:text-6xl text-amber-300 mb-3">⏸ BALAPAN DIJEDA</div>
+              <p class="text-slate-300 text-sm mb-4">Simulasi dan waktu berhenti sementara.</p>
+              <button id="paused-resume-btn" class="btn-3d px-6 py-3 rounded-xl bg-emerald-500 text-white font-display font-bold text-lg">▶ Lanjutkan Balapan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: WINNER RESULT ==================== -->
+    <section id="page-result" class="page-section hidden flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <div class="text-center space-y-2">
+        <div class="inline-block px-4 py-1 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold text-xs uppercase tracking-widest">
+          Hasil Resmi Balap Desa Juwangi
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">
+          🏆 PODIUM PEMENANG
+        </h2>
+        <p id="result-seed-info" class="text-xs text-slate-400 font-mono">Seed Simulasi: -</p>
+      </div>
+
+      <!-- Podium Top 3 -->
+      <div id="podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end max-w-4xl mx-auto pt-4">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <button id="result-rematch-btn" class="btn-3d px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-display font-bold text-base">
+          🔄 BALAPAN ULANG (Seed Baru)
+        </button>
+        <button id="result-setup-btn" class="btn-3d px-5 py-3 rounded-2xl bg-slate-700 text-white font-display font-bold text-base">
+          ⚙️ KEMBALI KE SETUP
+        </button>
+        <button id="result-save-btn" class="btn-3d px-5 py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-bold text-base">
+          💾 SIMPAN HASIL (.CSV)
+        </button>
+      </div>
+
+      <!-- Full Ranking Table -->
+      <div class="card-cartoon p-4 sm:p-5">
+        <h3 class="font-display text-xl font-bold text-cyan-300 mb-3">📋 Peringkat Lengkap Peserta</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase">
+                <th class="py-2 px-3">Peringkat</th>
+                <th class="py-2 px-3">Karakter</th>
+                <th class="py-2 px-3">Nama Peserta</th>
+                <th class="py-2 px-3 text-right">Waktu Finish</th>
+              </tr>
+            </thead>
+            <tbody id="result-ranking-tbody" class="divide-y divide-slate-800">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: RACE COLLECTION MANAGER ==================== -->
+  <div id="modal-collections" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-cartoon max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <h3 class="font-display text-xl font-bold text-amber-300">📁 Kelola Koleksi Balapan (IndexedDB)</h3>
+        <button id="close-collections-modal" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">✕</button>
+      </div>
+      <div class="p-4 overflow-y-auto space-y-4 flex-1">
+        <div class="flex flex-wrap gap-2">
+          <input id="input-new-collection-name" type="text" placeholder="Nama koleksi baru (misal: Balap Sekolah)..." class="flex-1 min-w-[200px] px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white" />
+          <button id="btn-create-collection" class="btn-3d px-4 py-2 rounded-xl bg-emerald-500 text-white font-bold text-sm">+ Buat Koleksi</button>
+          <label class="btn-3d px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm cursor-pointer">
+            📥 Import Koleksi (.JSON)
+            <input id="input-import-collection" type="file" accept=".json" class="hidden" />
+          </label>
+        </div>
+
+        <div id="collections-list" class="space-y-2.5">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="p-3 bg-slate-900/70 border-t border-slate-700 text-xs text-slate-400 flex justify-between items-center">
+        <span id="storage-estimate-text">Memeriksa kapasitas penyimpanan...</span>
+        <span>Auto-save aktif</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: PANDUAN & ATURAN ==================== -->
+  <div id="modal-guide" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-cartoon max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <h3 class="font-display text-xl font-bold text-cyan-300">📖 Panduan Balap Desa Juwangi</h3>
+        <button id="close-guide-modal" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-3 text-sm text-slate-300 leading-relaxed">
+        <p><strong class="text-amber-300">1. Tambah Peserta &amp; GIF Kustom:</strong> Buka halaman <em>Setup</em> untuk menambah peserta satu per satu, massal, atau unggah GIF ninja animasi. Animasi GIF asli dan transparansi tetap dipertahankan.</p>
+        <p><strong class="text-amber-300">2. Tiga Rintangan Lapangan Gebyok:</strong> Semua peserta melewati <em>Kayu Tumbang</em>, <em>Kubangan Lumpur</em>, dan <em>Penghalang Berputar</em>. Efeknya acak dan setara bagi semua peserta.</p>
+        <p><strong class="text-amber-300">3. Mesin Balapan Adil (Seeded PRNG):</strong> Setiap balapan menghasilkan <em>Random Seed</em> unik saat dimulai. Tidak ada peserta yang diunggulkan berdasarkan nama, urutan, atau ukuran GIF.</p>
+        <p><strong class="text-amber-300">4. Mode Layar &amp; Operator Fullscreen:</strong> Cocok untuk laptop maupun Interactive Flat Panel (IFP) 75 inci. Saat fullscreen, arahkan kursor ke bagian atas layar untuk memunculkan kontrol operator.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: IN-PAGE CONFIRM / PROMPT ==================== -->
+  <div id="modal-dialog" class="hidden fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-cartoon max-w-md w-full p-5 space-y-4">
+      <h3 id="dialog-title" class="font-display text-xl font-bold text-amber-300">Konfirmasi</h3>
+      <p id="dialog-message" class="text-sm text-slate-300"></p>
+      <input id="dialog-input" type="text" class="hidden w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white" />
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="dialog-cancel-btn" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-sm">Batal</button>
+        <button id="dialog-confirm-btn" class="btn-3d px-4 py-2 rounded-xl bg-emerald-500 text-white font-bold text-sm">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[70] space-y-2 pointer-events-none"></div>
+
+  <script>
+    // =========================================================================
+    // 1. UTILITIES & TOAST / IN-PAGE DIALOGS (No alert/confirm/prompt)
+    // =========================================================================
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const colors = {
+        info: 'bg-slate-800 border-cyan-400/60 text-cyan-100',
+        success: 'bg-emerald-900/95 border-emerald-400 text-emerald-100',
+        warning: 'bg-amber-900/95 border-amber-400 text-amber-100',
+        error: 'bg-rose-900/95 border-rose-400 text-rose-100'
+      };
+      el.className = `px-4 py-2.5 rounded-xl border-2 shadow-xl text-xs sm:text-sm font-semibold pointer-events-auto transition-all duration-300 ${colors[type] || colors.info}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(8px)';
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    function openDialog({ title, message, showInput = false, defaultValue = '', confirmText = 'Ya, Lanjutkan', confirmClass = 'bg-emerald-500' }) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('modal-dialog');
+        const titleEl = document.getElementById('dialog-title');
+        const msgEl = document.getElementById('dialog-message');
+        const inputEl = document.getElementById('dialog-input');
+        const cancelBtn = document.getElementById('dialog-cancel-btn');
+        const confirmBtn = document.getElementById('dialog-confirm-btn');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        confirmBtn.textContent = confirmText;
+        confirmBtn.className = `btn-3d px-4 py-2 rounded-xl text-white font-bold text-sm ${confirmClass}`;
+
+        if (showInput) {
+          inputEl.classList.remove('hidden');
+          inputEl.value = defaultValue;
+          setTimeout(() => inputEl.focus(), 50);
+        } else {
+          inputEl.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+
+        const cleanup = (val) => {
+          modal.classList.add('hidden');
+          cancelBtn.removeEventListener('click', onCancel);
+          confirmBtn.removeEventListener('click', onConfirm);
+          resolve(val);
+        };
+        const onCancel = () => cleanup(null);
+        const onConfirm = () => cleanup(showInput ? inputEl.value.trim() : true);
+
+        cancelBtn.addEventListener('click', onCancel);
+        confirmBtn.addEventListener('click', onConfirm);
+      });
+    }
+
+    function uid(prefix = 'id') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    // =========================================================================
+    // 2. SEEDED PRNG (Mulberry32 + FNV-1a Hash)
+    // =========================================================================
+    function hashString(str) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function createPRNG(seedStr) {
+      let a = hashString(seedStr);
+      return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function generateRaceSeed() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      return `BDJ-${code}`;
+    }
+
+    // =========================================================================
+    // 3. WEB AUDIO SYNTHESIZER (Autoplay-safe, Offline-ready)
+    // =========================================================================
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.musicTimer = null;
+        this.volume = 0.8;
+        this.musicOn = true;
+        this.sfxOn = true;
+        this.currentBgm = null;
+      }
+
+      unlock() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          this.ctx = new AudioCtx();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.value = this.volume;
+          this.masterGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      }
+
+      setVolume(v) {
+        this.volume = v;
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.02);
+        }
+      }
+
+      playTone(freq, duration = 0.15, type = 'triangle', vol = 0.25, slideTo = null) {
+        if (!this.sfxOn || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+      }
+
+      playCountdown(num) {
+        this.unlock();
+        if (num > 0) {
+          this.playTone(520, 0.18, 'sine', 0.35);
+        } else {
+          // GO!
+          this.playTone(784, 0.12, 'square', 0.25);
+          setTimeout(() => this.playTone(1046.5, 0.35, 'triangle', 0.35), 90);
+        }
+      }
+
+      playJump() { this.playTone(280, 0.14, 'sine', 0.16, 560); }
+      playMud() { this.playTone(180, 0.18, 'sawtooth', 0.12, 85); }
+      playSpinner() { this.playTone(420, 0.12, 'triangle', 0.14, 240); }
+      playStep() { this.playTone(110 + Math.random() * 35, 0.04, 'triangle', 0.04); }
+
+      playCheer(peakVol = 0.22, duration = 0.75) {
+        if (!this.sfxOn || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(750, now);
+        filter.frequency.linearRampToValueAtTime(1350, now + duration * 0.45);
+        filter.frequency.linearRampToValueAtTime(900, now + duration);
+        filter.Q.value = 1.2;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.005, now);
+        gain.gain.linearRampToValueAtTime(peakVol, now + duration * 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start(now);
+      }
+
+      playVictory() {
+        this.unlock();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((n, idx) => {
+          setTimeout(() => this.playTone(n, 0.24, 'triangle', 0.3), idx * 110);
+        });
+        this.playCheer();
+      }
+
+      startMusic(mode = 'race') {
+        this.stopMusic();
+        if (!this.musicOn || !this.ctx) return;
+        this.currentBgm = mode;
+        const scales = {
+          home: [261.6, 293.7, 329.6, 392.0, 440.0, 523.3],
+          race: [329.6, 392.0, 440.0, 493.9, 587.3, 659.3],
+          podium: [392.0, 493.9, 587.3, 659.3, 784.0]
+        };
+        const scale = scales[mode] || scales.race;
+        const tempo = mode === 'race' ? 190 : 320;
+        let step = 0;
+        this.musicTimer = setInterval(() => {
+          if (!this.musicOn || !this.ctx || this.ctx.state !== 'running') return;
+          const note = scale[(step * (mode === 'race' ? 3 : 2)) % scale.length];
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = mode === 'race' ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(note, now);
+          gain.gain.setValueAtTime(0.07, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (tempo / 1000) * 0.9);
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+          osc.start(now);
+          osc.stop(now + tempo / 1000);
+          step++;
+        }, tempo);
+      }
+
+      stopMusic() {
+        if (this.musicTimer) {
+          clearInterval(this.musicTimer);
+          this.musicTimer = null;
+        }
+        this.currentBgm = null;
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    // =========================================================================
+    // 4. INDEXEDDB STORAGE MANAGER (Collections + GIF Blobs)
+    // =========================================================================
+    class DBManager {
+      constructor() {
+        this.dbName = 'BalapDesaJuwangiDB';
+        this.version = 1;
+        this.db = null;
+      }
+
+      async init() {
+        if (this.db) return this.db;
+        return new Promise((resolve, reject) => {
+          if (!window.indexedDB) {
+            reject(new Error('Browser tidak mendukung IndexedDB.'));
+            return;
+          }
+          const req = indexedDB.open(this.dbName, this.version);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('collections')) {
+              db.createObjectStore('collections', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('gifs')) {
+              db.createObjectStore('gifs', { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = () => {
+            this.db = req.result;
+            resolve(this.db);
+          };
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async getAllCollections() {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('collections', 'readonly');
+          const req = tx.objectStore('collections').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async saveCollection(col) {
+        await this.init();
+        col.updatedAt = Date.now();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('collections', 'readwrite');
+          tx.objectStore('collections').put(col);
+          tx.oncomplete = () => resolve(col);
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      async deleteCollection(id) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('collections', 'readwrite');
+          tx.objectStore('collections').delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      async saveGif(id, blob, meta = {}) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('gifs', 'readwrite');
+          tx.objectStore('gifs').put({ id, blob, name: meta.name || 'ninja.gif', size: blob.size, createdAt: Date.now() });
+          tx.oncomplete = () => resolve(id);
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      async getGif(id) {
+        if (!id) return null;
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('gifs', 'readonly');
+          const req = tx.objectStore('gifs').get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async deleteGif(id) {
+        if (!id) return;
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('gifs', 'readwrite');
+          tx.objectStore('gifs').delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+    }
+
+    const db = new DBManager();
+
+    // =========================================================================
+    // 5. APPLICATION STATE & DEFAULT DATA
+    // =========================================================================
+    const NINJA_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
+    function createDefaultArena(name = 'Lapangan Gebyok Utama') {
+      return {
+        id: uid('arena'),
+        name,
+        theme: 'morning',
+        decoSpectators: true,
+        decoFlags: true,
+        decoSignboard: true,
+        trackPadding: 2,
+        obs1Pos: 25,
+        obs2Pos: 52,
+        obs3Pos: 78
+      };
+    }
+
+    function createDefaultCollection(name = 'Balap Desa') {
+      const defaultNames = ['Bima', 'Sari', 'Raka', 'Dewi', 'Joko', 'Lestari', 'Bagus', 'Wulan'];
+      const arena = createDefaultArena();
+      return {
+        id: uid('col'),
+        name,
+        updatedAt: Date.now(),
+        participants: defaultNames.map((n, idx) => ({
+          id: uid('p'),
+          name: n,
+          gifId: null,
+          color: NINJA_COLORS[idx % NINJA_COLORS.length]
+        })),
+        arenas: [arena],
+        activeArenaId: arena.id,
+        settings: {
+          charSize: 100,
+          nameSize: 100,
+          countdownSec: 3,
+          baseSpeed: 100,
+          speedVariance: 100,
+          obstacleEffect: 100,
+          winnerCount: 3,
+          aspectRatio: 'fit',
+          customAspectRatio: '21:9',
+          visualQuality: 'high',
+          audioVolume: 80,
+          musicOn: true,
+          sfxOn: true
+        }
+      };
+    }
+
+    const state = {
+      currentPage: 'home',
+      collections: [],
+      activeCollection: null,
+      gifUrlCache: new Map(), // gifId -> ObjectURL
+      race: {
+        status: 'idle', // idle | countdown | running | paused | finished
+        seed: '',
+        prng: null,
+        simTime: 0,
+        lastFrameTime: 0,
+        rafId: null,
+        runners: [],
+        finishedOrder: [],
+        firstWinnerAnnounced: false,
+        particles: [],
+        confetti: [],
+        countdownRemaining: 0,
+        countdownTimerId: null,
+        stepSoundAcc: 0,
+        lastLeaderId: null,
+        lastCheerTime: -10,
+        finalSprintCheered: false
+      }
+    };
+
+    function getActiveArena() {
+      const col = state.activeCollection;
+      if (!col) return createDefaultArena();
+      return col.arenas.find(a => a.id === col.activeArenaId) || col.arenas[0];
+    }
+
+    async function validateGifFile(file) {
+      if (!file) throw new Error('File kosong.');
+      const headerBuf = await file.slice(0, 6).arrayBuffer();
+      const header = String.fromCharCode(...new Uint8Array(headerBuf));
+      if (header !== 'GIF87a' && header !== 'GIF89a') {
+        throw new Error(`File "${file.name}" bukan GIF animasi yang valid atau rusak.`);
+      }
+    }
+
+    async function releaseGifIfUnused(gifId) {
+      if (!gifId) return;
+      const stillUsed = state.collections.some(c => c.participants.some(p => p.gifId === gifId));
+      if (!stillUsed) {
+        if (state.gifUrlCache.has(gifId)) {
+          URL.revokeObjectURL(state.gifUrlCache.get(gifId));
+          state.gifUrlCache.delete(gifId);
+        }
+        try { await db.deleteGif(gifId); } catch (_) {}
+      }
+    }
+
+    async function ensureGifUrl(gifId) {
+      if (!gifId) return null;
+      if (state.gifUrlCache.has(gifId)) return state.gifUrlCache.get(gifId);
+      try {
+        const rec = await db.getGif(gifId);
+        if (rec && rec.blob) {
+          const url = URL.createObjectURL(rec.blob);
+          state.gifUrlCache.set(gifId, url);
+          return url;
+        }
+      } catch (e) {
+        console.warn('Gagal memuat GIF:', e);
+      }
+      return null;
+    }
+
+    async function autoSaveActiveCollection() {
+      if (!state.activeCollection) return;
+      try {
+        await db.saveCollection(state.activeCollection);
+        checkStorageQuota();
+      } catch (e) {
+        showToast('Gagal menyimpan ke IndexedDB: ' + e.message, 'error');
+      }
+    }
+
+    async function checkStorageQuota() {
+      if (!navigator.storage || !navigator.storage.estimate) return;
+      try {
+        const { usage = 0, quota = 1 } = await navigator.storage.estimate();
+        const pct = Math.round((usage / quota) * 100);
+        const mbUsed = (usage / (1024 * 1024)).toFixed(1);
+        const mbQuota = (quota / (1024 * 1024)).toFixed(0);
+        const estEl = document.getElementById('storage-estimate-text');
+        if (estEl) estEl.textContent = `Penyimpanan terpakai: ${mbUsed} MB / ${mbQuota} MB (${pct}%)`;
+        const banner = document.getElementById('storage-warning-banner');
+        if (pct >= 80) {
+          banner.classList.remove('hidden');
+          document.getElementById('storage-warning-text').textContent = `Penyimpanan browser hampir penuh (${pct}%). Hapus GIF/koleksi yang tidak dipakai atau ekspor ke JSON.`;
+        } else {
+          banner.classList.add('hidden');
+        }
+      } catch (_) {}
+    }
+
+    // =========================================================================
+    // 6. DEFAULT 3D-CARTOON NINJA SVG GENERATOR (For participants without GIF)
+    // =========================================================================
+    function createNinjaSvg(color = '#ef4444') {
+      return `
+        <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-md">
+          <!-- Flowing Scarf -->
+          <path d="M18 26 Q6 22 4 30 Q12 32 20 29 Z" fill="${color}" opacity="0.9"/>
+          <!-- Body -->
+          <rect x="22" y="28" width="20" height="20" rx="7" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+          <!-- Belt -->
+          <rect x="22" y="38" width="20" height="4" fill="${color}"/>
+          <!-- Head -->
+          <circle cx="33" cy="20" r="13" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+          <!-- Headband -->
+          <rect x="20" y="13" width="26" height="5" rx="2" fill="${color}"/>
+          <!-- Face Window -->
+          <rect x="27" y="18" width="16" height="7" rx="3" fill="#fed7aa"/>
+          <!-- Eyes -->
+          <circle cx="32" cy="21.5" r="1.7" fill="#0f172a"/>
+          <circle cx="39" cy="21.5" r="1.7" fill="#0f172a"/>
+          <!-- Legs -->
+          <rect x="24" y="47" width="6" height="10" rx="3" fill="#0f172a"/>
+          <rect x="34" y="47" width="6" height="10" rx="3" fill="#0f172a"/>
+        </svg>
+      `;
+    }
+
+    // =========================================================================
+    // 7. ARENA RENDERER (Lapangan Gebyok + Patung Kuda + 3 Obstacles)
+    // =========================================================================
+    const THEME_PALETTES = {
+      morning: { skyTop: '#38bdf8', skyBot: '#bae6fd', hill: '#4ade80', grass1: '#22c55e', grass2: '#16a34a', sun: '#fde047' },
+      sunset:  { skyTop: '#7c3aed', skyBot: '#fb923c', hill: '#15803d', grass1: '#16a34a', grass2: '#14532d', sun: '#fbbf24' },
+      festival:{ skyTop: '#0284c7', skyBot: '#7dd3fc', hill: '#22c55e', grass1: '#10b981', grass2: '#059669', sun: '#fef08a' },
+      night:   { skyTop: '#0f172a', skyBot: '#1e1b4b', hill: '#064e3b', grass1: '#047857', grass2: '#065f46', sun: '#e2e8f0' }
+    };
+
+    function drawPatungKuda(ctx, x, y, scale = 1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      // Pedestal Base (3D Cartoon Stone)
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(-38, 0, 76, 18);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(-32, -12, 64, 14);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(-20, -6, 40, 8);
+
+      // Horse Statue Body (Bronze/Golden 3D Cartoon Monument)
+      ctx.fillStyle = '#b45309';
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 2;
+
+      // Hind legs
+      ctx.beginPath();
+      ctx.roundRect(-22, -32, 9, 22, 4);
+      ctx.fill(); ctx.stroke();
+
+      // Torso
+      ctx.beginPath();
+      ctx.ellipse(-2, -38, 22, 12, -0.25, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      // Rearing Front Legs
+      ctx.beginPath();
+      ctx.roundRect(8, -42, 8, 18, 4);
+      ctx.fill(); ctx.stroke();
+
+      // Neck & Head
+      ctx.beginPath();
+      ctx.moveTo(8, -44);
+      ctx.lineTo(18, -68);
+      ctx.lineTo(32, -62);
+      ctx.lineTo(28, -54);
+      ctx.lineTo(18, -54);
+      ctx.lineTo(16, -38);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // Golden Mane Highlight
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(10, -48);
+      ctx.lineTo(16, -68);
+      ctx.lineTo(20, -64);
+      ctx.lineTo(14, -44);
+      ctx.closePath();
+      ctx.fill();
+
+      // Tail
+      ctx.fillStyle = '#92400e';
+      ctx.beginPath();
+      ctx.moveTo(-22, -38);
+      ctx.quadraticCurveTo(-36, -34, -32, -20);
+      ctx.quadraticCurveTo(-24, -28, -18, -32);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawArenaBackground(canvas, arena, participantCount = 8, animTick = 0) {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const pal = THEME_PALETTES[arena.theme] || THEME_PALETTES.morning;
+
+      // 1. Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.35);
+      skyGrad.addColorStop(0, pal.skyTop);
+      skyGrad.addColorStop(1, pal.skyBot);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h * 0.35);
+
+      // Sun / Moon
+      ctx.fillStyle = pal.sun;
+      ctx.beginPath();
+      ctx.arc(w * 0.86, h * 0.11, Math.min(w, h) * 0.045, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Clouds
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      const cloudOffset = (animTick * 12) % (w + 200);
+      [0.15, 0.48, 0.78].forEach((cx, i) => {
+        const x = ((cx * w + cloudOffset) % (w + 160)) - 80;
+        const y = h * (0.07 + i * 0.03);
+        ctx.beginPath();
+        ctx.arc(x, y, 18, 0, Math.PI * 2);
+        ctx.arc(x + 18, y - 6, 22, 0, Math.PI * 2);
+        ctx.arc(x + 38, y, 16, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Distant Hills
+      const horizonY = h * 0.28;
+      ctx.fillStyle = pal.hill;
+      ctx.beginPath();
+      ctx.moveTo(0, horizonY);
+      ctx.quadraticCurveTo(w * 0.25, horizonY - 36, w * 0.5, horizonY - 8);
+      ctx.quadraticCurveTo(w * 0.75, horizonY - 40, w, horizonY - 10);
+      ctx.lineTo(w, h * 0.36);
+      ctx.lineTo(0, h * 0.36);
+      ctx.closePath();
+      ctx.fill();
+
+      // Village Trees
+      const treePositions = [0.06, 0.14, 0.33, 0.64, 0.73, 0.91];
+      treePositions.forEach((tx, idx) => {
+        const x = w * tx;
+        const y = horizonY + 4;
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(x - 4, y - 22, 8, 22);
+        ctx.fillStyle = idx % 2 === 0 ? '#15803d' : '#166534';
+        ctx.beginPath();
+        ctx.arc(x, y - 28, 17, 0, Math.PI * 2);
+        ctx.arc(x - 10, y - 20, 12, 0, Math.PI * 2);
+        ctx.arc(x + 10, y - 20, 12, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 2. Patung Kuda Landmark (Prominent in background!)
+      drawPatungKuda(ctx, w * 0.48, horizonY + 8, Math.max(0.75, Math.min(1.25, h / 520)));
+
+      // Signboard "BALAP DESA JUWANGI"
+      if (arena.decoSignboard) {
+        const sx = w * 0.23;
+        const sy = horizonY - 18;
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(sx - 45, sy, 6, 22);
+        ctx.fillRect(sx + 39, sy, 6, 22);
+        ctx.fillStyle = '#b45309';
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(sx - 68, sy - 24, 136, 26, 6);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fef08a';
+        ctx.font = `bold ${Math.max(10, Math.round(w * 0.011))}px Fredoka, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('BALAP DESA JUWANGI', sx, sy - 7);
+      }
+
+      // Fence along top of track
+      const trackTop = h * 0.30;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, trackTop - 10, w, 4);
+      for (let fx = 10; fx < w; fx += 34) {
+        ctx.fillRect(fx, trackTop - 16, 5, 16);
+      }
+
+      // Optional Flags
+      if (arena.decoFlags) {
+        const flagColors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'];
+        for (let fx = 18; fx < w; fx += 44) {
+          ctx.fillStyle = flagColors[(fx / 44) % flagColors.length | 0];
+          ctx.beginPath();
+          ctx.moveTo(fx, trackTop - 16);
+          ctx.lineTo(fx + 14, trackTop - 11);
+          ctx.lineTo(fx, trackTop - 6);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // Optional Spectators
+      if (arena.decoSpectators) {
+        const specColors = ['#f43f5e', '#38bdf8', '#facc15', '#a855f7', '#fb923c'];
+        for (let sx = 30; sx < w - 30; sx += 52) {
+          const bounce = Math.sin(animTick * 6 + sx) * 2.5;
+          ctx.fillStyle = specColors[(sx / 52) % specColors.length | 0];
+          ctx.beginPath();
+          ctx.arc(sx, trackTop - 20 + bounce, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fed7aa';
+          ctx.beginPath();
+          ctx.arc(sx, trackTop - 28 + bounce, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 3. Grass Track & Lanes
+      const trackH = h - trackTop;
+      const count = Math.max(1, participantCount);
+      const laneH = trackH / count;
+
+      for (let i = 0; i < count; i++) {
+        ctx.fillStyle = i % 2 === 0 ? pal.grass1 : pal.grass2;
+        ctx.fillRect(0, trackTop + i * laneH, w, laneH + 1);
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, trackTop + i * laneH);
+        ctx.lineTo(w, trackTop + i * laneH);
+        ctx.stroke();
+      }
+
+      // 4. Start & Finish Lines
+      const startX = w * 0.06;
+      const finishX = w * 0.93;
+
+      // Start Line
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.fillRect(startX - 3, trackTop, 6, trackH);
+
+      // Checkered Finish Line
+      const checkSize = Math.max(8, Math.min(16, trackH / 18));
+      const rows = Math.ceil(trackH / checkSize);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < 2; c++) {
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#ffffff' : '#0f172a';
+          ctx.fillRect(finishX + c * checkSize, trackTop + r * checkSize, checkSize, checkSize);
+        }
+      }
+      // Finish Banner Arch
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(finishX - 6, trackTop - 24, checkSize * 2 + 12, 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px Fredoka, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('FINISH', finishX + checkSize, trackTop - 11);
+
+      // 5. Three Fixed Obstacles across the track
+      const usableW = finishX - startX;
+      const obs1X = startX + usableW * (arena.obs1Pos / 100);
+      const obs2X = startX + usableW * (arena.obs2Pos / 100);
+      const obs3X = startX + usableW * (arena.obs3Pos / 100);
+
+      // Obstacle 1: Kayu Tumbang (Fallen Log)
+      ctx.fillStyle = '#78350f';
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(obs1X - 8, trackTop + 2, 16, trackH - 4, 6);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(obs1X - 3, trackTop + 6, 4, trackH - 12);
+
+      // Obstacle 2: Kubangan Lumpur (Mud Puddle)
+      ctx.fillStyle = '#57361c';
+      ctx.beginPath();
+      ctx.roundRect(obs2X - 18, trackTop + 2, 36, trackH - 4, 12);
+      ctx.fill();
+      ctx.fillStyle = '#7c4d2b';
+      for (let m = 0; m < count; m++) {
+        ctx.beginPath();
+        ctx.ellipse(obs2X, trackTop + (m + 0.5) * laneH, 12, Math.max(4, laneH * 0.28), 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Obstacle 3: Penghalang Berputar (Spinning Barriers)
+      for (let m = 0; m < count; m++) {
+        const cy = trackTop + (m + 0.5) * laneH;
+        const r = Math.max(8, Math.min(18, laneH * 0.38));
+        ctx.save();
+        ctx.translate(obs3X, cy);
+        ctx.rotate(animTick * 4 + m * 0.4);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(-r, -3, r * 2, 6);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(-3, -r, 6, r * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // 8. HOME HERO ANIMATION
+    // =========================================================================
+    let homeAnimTick = 0;
+    function renderHomeHero() {
+      const canvas = document.getElementById('home-hero-canvas');
+      if (!canvas || state.currentPage !== 'home') {
+        requestAnimationFrame(renderHomeHero);
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
+        canvas.width = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+      }
+      homeAnimTick += 0.016;
+      const arena = getActiveArena();
+      drawArenaBackground(canvas, arena, 4, homeAnimTick);
+
+      // Draw 4 animated mini ninja silhouettes running across hero
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const trackTop = h * 0.30;
+      const laneH = (h - trackTop) / 4;
+      NINJA_COLORS.slice(0, 4).forEach((col, i) => {
+        const progress = ((homeAnimTick * (0.18 + i * 0.03) + i * 0.22) % 1.0);
+        const x = w * 0.06 + progress * (w * 0.87);
+        const y = trackTop + (i + 0.5) * laneH + Math.sin(homeAnimTick * 14 + i) * 3;
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = col;
+        ctx.fillRect(x - 10, y - 6, 20, 4);
+      });
+
+      requestAnimationFrame(renderHomeHero);
+    }
+
+    // =========================================================================
+    // 9. DETERMINISTIC RACE SIMULATION ENGINE
+    // =========================================================================
+    function initRaceRunners() {
+      const col = state.activeCollection;
+      const arena = getActiveArena();
+      const prng = state.race.prng;
+
+      state.race.runners = col.participants.map((p, idx) => ({
+        id: p.id,
+        name: p.name,
+        gifId: p.gifId,
+        color: p.color || NINJA_COLORS[idx % NINJA_COLORS.length],
+        laneIndex: idx,
+        progress: 0, // 0.0 (start) -> 1.0 (finish)
+        // Fair identical distribution for all participants:
+        baseRate: 0.072 + (prng() - 0.5) * 0.008,
+        currentSpeed: 0.072,
+        nextSurgeTime: 0.4 + prng() * 1.2,
+        surgeTarget: 1.0,
+        obs1Passed: false,
+        obs2Passed: false,
+        obs3Passed: false,
+        stateEffect: 'run', // run | jump | slip | finished
+        effectTimer: 0,
+        jumpOffset: 0,
+        finished: false,
+        finishTime: null,
+        domEl: null
+      }));
+      state.race.finishedOrder = [];
+      state.race.firstWinnerAnnounced = false;
+      state.race.simTime = 0;
+      state.race.lastLeaderId = null;
+      state.race.lastCheerTime = -10;
+      state.race.finalSprintCheered = false;
+      state.race.particles = [];
+      state.race.confetti = [];
+    }
+
+    function buildRunnerDomElements() {
+      const layer = document.getElementById('arena-runners-layer');
+      layer.innerHTML = '';
+      const col = state.activeCollection;
+      const count = Math.max(1, state.race.runners.length);
+      const box = document.getElementById('arena-aspect-box');
+      const h = box.clientHeight || 500;
+      const trackTop = h * 0.30;
+      const laneH = (h - trackTop) / count;
+
+      const userCharScale = (col.settings.charSize || 100) / 100;
+      const userNameScale = (col.settings.nameSize || 100) / 100;
+      const autoSize = Math.max(24, Math.min(72, laneH * 0.85)) * userCharScale;
+      const fontSize = Math.max(9, Math.min(15, laneH * 0.24)) * userNameScale;
+
+      state.race.runners.forEach(async (r) => {
+        const el = document.createElement('div');
+        el.className = 'absolute left-0 top-0 flex flex-col items-center will-change-transform';
+        el.style.width = `${autoSize}px`;
+
+        const labelWrap = document.createElement('div');
+        labelWrap.className = 'flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-950/85 text-white font-bold whitespace-nowrap border border-white/25 shadow mb-0.5 leading-none';
+        labelWrap.style.fontSize = `${fontSize}px`;
+
+        const rankEl = document.createElement('span');
+        rankEl.className = 'px-1 py-0.5 rounded bg-amber-400 text-slate-950 font-display text-[0.85em] leading-none';
+        rankEl.textContent = `#${r.laneIndex + 1}`;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = r.name;
+        labelWrap.append(rankEl, nameSpan);
+
+        const spriteWrap = document.createElement('div');
+        spriteWrap.className = 'relative flex items-center justify-center';
+        spriteWrap.style.width = `${autoSize}px`;
+        spriteWrap.style.height = `${autoSize}px`;
+
+        if (r.gifId) {
+          const url = await ensureGifUrl(r.gifId);
+          if (url) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = r.name;
+            img.className = 'w-full h-full object-contain rounded-lg drop-shadow-md';
+            img.onerror = () => { spriteWrap.innerHTML = createNinjaSvg(r.color); };
+            spriteWrap.appendChild(img);
+          } else {
+            spriteWrap.innerHTML = createNinjaSvg(r.color);
+          }
+        } else {
+          spriteWrap.innerHTML = createNinjaSvg(r.color);
+        }
+
+        el.appendChild(labelWrap);
+        el.appendChild(spriteWrap);
+        layer.appendChild(el);
+        r.domEl = el;
+        r.spriteWrap = spriteWrap;
+        r.rankEl = rankEl;
+      });
+    }
+
+    function stepSimulation(dt) {
+      const col = state.activeCollection;
+      const arena = getActiveArena();
+      const prng = state.race.prng;
+      const speedMult = (col.settings.baseSpeed || 100) / 100;
+      const varMult = (col.settings.speedVariance || 100) / 100;
+      const obsMult = (col.settings.obstacleEffect || 100) / 100;
+
+      state.race.simTime += dt;
+      state.race.stepSoundAcc += dt;
+      if (state.race.stepSoundAcc >= 0.24) {
+        state.race.stepSoundAcc = 0;
+        audio.playStep();
+      }
+      let allFinished = true;
+
+      const obs1P = arena.obs1Pos / 100;
+      const obs2P = arena.obs2Pos / 100;
+      const obs3P = arena.obs3Pos / 100;
+
+      state.race.runners.forEach((r) => {
+        if (r.finished) return;
+        allFinished = false;
+
+        // Dynamic speed surges & comebacks
+        if (state.race.simTime >= r.nextSurgeTime) {
+          r.nextSurgeTime = state.race.simTime + 0.45 + prng() * 1.1;
+          const randFactor = (prng() - 0.48) * 0.75 * varMult;
+          r.surgeTarget = Math.max(0.55, Math.min(1.65, 1.0 + randFactor));
+        }
+
+        // Smoothly interpolate speed
+        const desiredSpeed = r.baseRate * r.surgeTarget * speedMult;
+        r.currentSpeed += (desiredSpeed - r.currentSpeed) * Math.min(1, dt * 4);
+
+        // Effect timer decay
+        if (r.effectTimer > 0) {
+          r.effectTimer -= dt;
+          if (r.stateEffect === 'jump') {
+            r.jumpOffset = Math.sin((r.effectTimer / 0.45) * Math.PI) * 26;
+          } else if (r.stateEffect === 'slip') {
+            r.currentSpeed *= 0.94;
+          }
+          if (r.effectTimer <= 0) {
+            r.stateEffect = 'run';
+            r.jumpOffset = 0;
+          }
+        }
+
+        // Advance progress
+        r.progress += r.currentSpeed * dt;
+
+        // Check Obstacle 1: Kayu Tumbang
+        if (!r.obs1Passed && r.progress >= obs1P) {
+          r.obs1Passed = true;
+          r.stateEffect = 'jump';
+          r.effectTimer = 0.45;
+          audio.playJump();
+          if (prng() < 0.35 * obsMult) {
+            r.currentSpeed *= 0.72; // slight stumble
+          }
+          spawnParticles(r, '#d97706', 6);
+        }
+
+        // Check Obstacle 2: Kubangan Lumpur
+        if (!r.obs2Passed && r.progress >= obs2P) {
+          r.obs2Passed = true;
+          if (prng() < 0.55 * obsMult) {
+            r.stateEffect = 'slip';
+            r.effectTimer = 0.55;
+            r.currentSpeed *= 0.65;
+            audio.playMud();
+          } else {
+            r.stateEffect = 'jump';
+            r.effectTimer = 0.42;
+            audio.playJump();
+          }
+          spawnParticles(r, '#78350f', 8);
+        }
+
+        // Check Obstacle 3: Penghalang Berputar
+        if (!r.obs3Passed && r.progress >= obs3P) {
+          r.obs3Passed = true;
+          if (prng() < 0.45 * obsMult) {
+            r.stateEffect = 'slip';
+            r.effectTimer = 0.4;
+            r.currentSpeed *= 0.75;
+          } else {
+            r.stateEffect = 'jump';
+            r.effectTimer = 0.4;
+          }
+          audio.playSpinner();
+          spawnParticles(r, '#22d3ee', 7);
+        }
+
+        // Check Finish
+        if (r.progress >= 1.0) {
+          // High-precision finish time interpolation
+          const overshoot = r.progress - 1.0;
+          const exactDtBack = overshoot / Math.max(0.001, r.currentSpeed);
+          r.progress = 1.0;
+          r.finished = true;
+          r.stateEffect = 'finished';
+          r.finishTime = Math.max(0.01, state.race.simTime - exactDtBack);
+          state.race.finishedOrder.push(r);
+          spawnParticles(r, '#fde047', 12);
+
+          if (state.race.finishedOrder.length === 1 && !state.race.firstWinnerAnnounced) {
+            state.race.firstWinnerAnnounced = true;
+            triggerFirstWinnerSpotlight(r);
+          }
+        }
+      });
+
+      // Mid-race crowd cheers (on overtake, final sprint, or periodic excitement)
+      if (!state.race.firstWinnerAnnounced && state.race.runners.length > 0) {
+        let leader = state.race.runners[0];
+        for (const r of state.race.runners) {
+          if (r.progress > leader.progress) leader = r;
+        }
+        const sinceCheer = state.race.simTime - state.race.lastCheerTime;
+        if (state.race.lastLeaderId && leader.id !== state.race.lastLeaderId && sinceCheer >= 2.2) {
+          state.race.lastCheerTime = state.race.simTime;
+          audio.playCheer(0.17, 0.65);
+        } else if (!state.race.finalSprintCheered && leader.progress >= 0.82 && sinceCheer >= 1.5) {
+          state.race.finalSprintCheered = true;
+          state.race.lastCheerTime = state.race.simTime;
+          audio.playCheer(0.24, 0.9);
+        } else if (arena.decoSpectators && sinceCheer >= 4.2) {
+          state.race.lastCheerTime = state.race.simTime;
+          audio.playCheer(0.12, 0.55);
+        }
+        state.race.lastLeaderId = leader.id;
+      }
+
+      if (allFinished || state.race.simTime > 65) {
+        // Complete any stragglers if safety timeout hit
+        state.race.runners.filter(r => !r.finished).sort((a, b) => b.progress - a.progress).forEach(r => {
+          r.finished = true;
+          r.finishTime = state.race.simTime + (1 - r.progress) * 10;
+          state.race.finishedOrder.push(r);
+        });
+        finishRace();
+      }
+    }
+
+    function spawnParticles(runner, color, count) {
+      if (state.activeCollection.settings.visualQuality === 'low') return;
+      for (let i = 0; i < count; i++) {
+        state.race.particles.push({
+          progress: runner.progress,
+          laneIndex: runner.laneIndex,
+          vx: (Math.random() - 0.5) * 80,
+          vy: -Math.random() * 60 - 15,
+          life: 0.45 + Math.random() * 0.25,
+          maxLife: 0.7,
+          size: 3 + Math.random() * 4,
+          color
+        });
+      }
+    }
+
+    function spawnConfetti(count = 90) {
+      const colors = ['#fbbf24', '#ef4444', '#10b981', '#3b82f6', '#ec4899', '#22d3ee'];
+      for (let i = 0; i < count; i++) {
+        state.race.confetti.push({
+          x: Math.random(),
+          y: -0.05 - Math.random() * 0.2,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: 0.25 + Math.random() * 0.35,
+          size: 6 + Math.random() * 6,
+          rot: Math.random() * 360,
+          color: colors[i % colors.length]
+        });
+      }
+    }
+
+    function triggerFirstWinnerSpotlight(winner) {
+      audio.playVictory();
+      spawnConfetti(110);
+      const banner = document.getElementById('winner-spotlight-banner');
+      const nameEl = document.getElementById('spotlight-name');
+      const avatarEl = document.getElementById('spotlight-avatar');
+      nameEl.textContent = winner.name;
+      avatarEl.innerHTML = '';
+      if (winner.gifId && state.gifUrlCache.has(winner.gifId)) {
+        const img = document.createElement('img');
+        img.src = state.gifUrlCache.get(winner.gifId);
+        img.className = 'w-full h-full object-contain';
+        avatarEl.appendChild(img);
+      } else {
+        avatarEl.innerHTML = createNinjaSvg(winner.color);
+      }
+      banner.classList.remove('hidden');
+    }
+
+    function renderRaceFrame() {
+      const bgCanvas = document.getElementById('arena-bg-canvas');
+      const fxCanvas = document.getElementById('arena-fx-canvas');
+      const box = document.getElementById('arena-aspect-box');
+      if (!bgCanvas || !fxCanvas || !box) return;
+
+      const w = box.clientWidth;
+      const h = box.clientHeight;
+      if (w > 0 && (bgCanvas.width !== w || bgCanvas.height !== h)) {
+        bgCanvas.width = w; bgCanvas.height = h;
+        fxCanvas.width = w; fxCanvas.height = h;
+      }
+
+      const arena = getActiveArena();
+      const count = Math.max(1, state.race.runners.length);
+      drawArenaBackground(bgCanvas, arena, count, state.race.simTime);
+
+      const startX = w * 0.06;
+      const finishX = w * 0.93;
+      const trackTop = h * 0.30;
+      const laneH = (h - trackTop) / count;
+
+      // Compute live rankings
+      const liveSorted = [...state.race.runners].sort((a, b) => {
+        if (a.finished && b.finished) return a.finishTime - b.finishTime;
+        if (a.finished) return -1;
+        if (b.finished) return 1;
+        return b.progress - a.progress;
+      });
+      const rankMap = new Map(liveSorted.map((r, i) => [r.id, i + 1]));
+
+      // Update DOM runner positions
+      const isRunning = state.race.status === 'running';
+      state.race.runners.forEach((r) => {
+        if (!r.domEl) return;
+        const x = startX + r.progress * (finishX - startX) - r.domEl.offsetWidth * 0.5;
+        const y = trackTop + (r.laneIndex + 0.5) * laneH - r.domEl.offsetHeight * 0.62 - r.jumpOffset;
+        r.domEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+
+        if (r.rankEl) {
+          const rk = rankMap.get(r.id) || (r.laneIndex + 1);
+          r.rankEl.textContent = `#${rk}`;
+          r.rankEl.className = `px-1 py-0.5 rounded font-display text-[0.85em] leading-none ${
+            rk === 1 ? 'bg-amber-400 text-slate-950' : rk === 2 ? 'bg-slate-300 text-slate-950' : rk === 3 ? 'bg-orange-400 text-slate-950' : 'bg-slate-700 text-slate-200'
+          }`;
+        }
+
+        if (r.spriteWrap) {
+          r.spriteWrap.classList.toggle('anim-run-bob', isRunning && !r.finished && r.stateEffect === 'run');
+          r.spriteWrap.classList.toggle('anim-slip', isRunning && r.stateEffect === 'slip');
+          r.spriteWrap.classList.toggle('anim-victory', r.finished && state.race.finishedOrder[0]?.id === r.id);
+        }
+      });
+
+      // Draw FX particles & confetti
+      const fxCtx = fxCanvas.getContext('2d');
+      fxCtx.clearRect(0, 0, w, h);
+
+      state.race.particles = state.race.particles.filter(p => p.life > 0);
+      state.race.particles.forEach(p => {
+        p.life -= 0.016;
+        const px = startX + p.progress * (finishX - startX) + p.vx * (0.7 - p.life);
+        const py = trackTop + (p.laneIndex + 0.5) * laneH + p.vy * (0.7 - p.life);
+        fxCtx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        fxCtx.fillStyle = p.color;
+        fxCtx.beginPath();
+        fxCtx.arc(px, py, p.size, 0, Math.PI * 2);
+        fxCtx.fill();
+      });
+
+      fxCtx.globalAlpha = 1;
+      state.race.confetti.forEach(c => {
+        c.y += c.vy * 0.016;
+        c.x += c.vx * 0.016;
+        c.rot += 4;
+        if (c.y > 1.05) c.y = -0.05;
+        fxCtx.save();
+        fxCtx.translate(c.x * w, c.y * h);
+        fxCtx.rotate((c.rot * Math.PI) / 180);
+        fxCtx.fillStyle = c.color;
+        fxCtx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+        fxCtx.restore();
+      });
+
+      document.getElementById('race-timer-display').textContent = `${state.race.simTime.toFixed(2)}s`;
+    }
+
+    function raceLoop(now) {
+      if (state.race.status !== 'running') return;
+      const dt = Math.min(0.05, (now - state.race.lastFrameTime) / 1000);
+      state.race.lastFrameTime = now;
+
+      // Fixed sub-steps for deterministic precision
+      const fixedDt = 1 / 60;
+      let acc = dt;
+      while (acc >= fixedDt) {
+        stepSimulation(fixedDt);
+        acc -= fixedDt;
+        if (state.race.status !== 'running') break;
+      }
+      renderRaceFrame();
+      if (state.race.status === 'running') {
+        state.race.rafId = requestAnimationFrame(raceLoop);
+      }
+    }
+
+    // =========================================================================
+    // 10. RACE CONTROLS (COUNTDOWN, PAUSE, RESUME, CANCEL, FINISH)
+    // =========================================================================
+    function updateOperatorButtons() {
+      const s = state.race.status;
+      document.getElementById('op-start-btn').classList.toggle('hidden', s !== 'idle');
+      document.getElementById('op-pause-btn').classList.toggle('hidden', s !== 'running');
+      document.getElementById('op-resume-btn').classList.toggle('hidden', s !== 'paused');
+      document.getElementById('paused-overlay').classList.toggle('hidden', s !== 'paused');
+    }
+
+    function clearCountdownTimer() {
+      if (state.race.countdownTimerId) {
+        clearTimeout(state.race.countdownTimerId);
+        state.race.countdownTimerId = null;
+      }
+    }
+
+    function prepareArenaPage() {
+      clearCountdownTimer();
+      if (state.race.rafId) cancelAnimationFrame(state.race.rafId);
+      state.race.status = 'idle';
+      const customSeed = document.getElementById('input-custom-seed')?.value?.trim();
+      state.race.seed = customSeed || generateRaceSeed();
+      state.race.prng = createPRNG(state.race.seed);
+      document.getElementById('race-seed-display').textContent = `Seed: ${state.race.seed}`;
+      document.getElementById('winner-spotlight-banner').classList.add('hidden');
+      document.getElementById('countdown-overlay').classList.add('hidden');
+      initRaceRunners();
+      updateOperatorButtons();
+      requestAnimationFrame(() => {
+        applyAspectRatioSetting();
+        buildRunnerDomElements();
+        renderRaceFrame();
+      });
+      setTimeout(() => {
+        applyAspectRatioSetting();
+        renderRaceFrame();
+      }, 100);
+    }
+
+    function startCountdownAndRace() {
+      if (!state.activeCollection || state.activeCollection.participants.length < 2) {
+        showToast('Minimal 2 peserta untuk memulai balapan!', 'warning');
+        navigateTo('setup');
+        return;
+      }
+      audio.unlock();
+      clearCountdownTimer();
+      if (state.race.status === 'finished') prepareArenaPage();
+      state.race.status = 'countdown';
+      updateOperatorButtons();
+
+      const overlay = document.getElementById('countdown-overlay');
+      const textEl = document.getElementById('countdown-text');
+      overlay.classList.remove('hidden');
+
+      const sec = state.activeCollection.settings.countdownSec || 3;
+      const steps = ['SIAP-SIAP!'];
+      for (let i = sec; i >= 1; i--) steps.push(String(i));
+      steps.push('GO!');
+
+      let idx = 0;
+      const runStep = () => {
+        if (state.race.status !== 'countdown') return;
+        const val = steps[idx];
+        textEl.textContent = val;
+        textEl.classList.remove('anim-countdown');
+        void textEl.offsetWidth;
+        textEl.classList.add('anim-countdown');
+
+        if (!isNaN(Number(val))) audio.playCountdown(Number(val));
+        else if (val === 'GO!') audio.playCountdown(0);
+
+        idx++;
+        if (idx < steps.length) {
+          state.race.countdownTimerId = setTimeout(runStep, 850);
+        } else {
+          state.race.countdownTimerId = setTimeout(() => {
+            if (state.race.status !== 'countdown') return;
+            overlay.classList.add('hidden');
+            state.race.status = 'running';
+            state.race.lastFrameTime = performance.now();
+            updateOperatorButtons();
+            audio.startMusic('race');
+            audio.playCheer(0.18, 0.7);
+            state.race.rafId = requestAnimationFrame(raceLoop);
+          }, 550);
+        }
+      };
+      runStep();
+    }
+
+    function pauseRace() {
+      if (state.race.status !== 'running') return;
+      state.race.status = 'paused';
+      if (state.race.rafId) cancelAnimationFrame(state.race.rafId);
+      audio.stopMusic();
+      updateOperatorButtons();
+    }
+
+    function resumeRace() {
+      if (state.race.status !== 'paused') return;
+      state.race.status = 'running';
+      state.race.lastFrameTime = performance.now();
+      audio.startMusic('race');
+      updateOperatorButtons();
+      state.race.rafId = requestAnimationFrame(raceLoop);
+    }
+
+    function finishRace() {
+      state.race.status = 'finished';
+      if (state.race.rafId) cancelAnimationFrame(state.race.rafId);
+      audio.stopMusic();
+      audio.startMusic('podium');
+      updateOperatorButtons();
+      renderResultPage();
+      setTimeout(() => navigateTo('result'), 1300);
+    }
+
+    function applyAspectRatioSetting() {
+      const box = document.getElementById('arena-aspect-box');
+      const vp = document.getElementById('arena-viewport');
+      if (!box || !vp) return;
+      const ratio = state.activeCollection?.settings?.aspectRatio || 'fit';
+      const vpW = vp.clientWidth || window.innerWidth;
+      const vpH = vp.clientHeight || Math.max(420, window.innerHeight - 130);
+      box.style.aspectRatio = '';
+      if (ratio === 'fit') {
+        box.style.width = `${vpW}px`;
+        box.style.height = `${vpH}px`;
+        return;
+      }
+
+      let rw = 16, rh = 9;
+      if (ratio === '16:9') { rw = 16; rh = 9; }
+      else if (ratio === '16:10') { rw = 16; rh = 10; }
+      else if (ratio === '4:3') { rw = 4; rh = 3; }
+      else if (ratio === 'custom') {
+        const raw = state.activeCollection?.settings?.customAspectRatio || '21:9';
+        const parts = raw.split(':').map(Number);
+        if (parts.length === 2 && parts[0] > 0 && parts[1] > 0) { rw = parts[0]; rh = parts[1]; }
+      }
+      if (vp && vp.clientWidth > 0 && vp.clientHeight > 0) {
+        const vpRatio = vp.clientWidth / vp.clientHeight;
+        const targetRatio = rw / rh;
+        if (vpRatio > targetRatio) {
+          box.style.height = '100%';
+          box.style.width = `${Math.round(vp.clientHeight * targetRatio)}px`;
+        } else {
+          box.style.width = '100%';
+          box.style.height = `${Math.round(vp.clientWidth / targetRatio)}px`;
+        }
+      }
+    }
+
+    // =========================================================================
+    // 11. RESULT PAGE RENDERING & EXPORT
+    // =========================================================================
+    function renderResultPage() {
+      const order = [...state.race.finishedOrder].sort((a, b) => a.finishTime - b.finishTime);
+      document.getElementById('result-seed-info').textContent = `Seed Simulasi: ${state.race.seed} • Total Peserta: ${order.length}`;
+
+      const podiumEl = document.getElementById('podium-container');
+      podiumEl.innerHTML = '';
+
+      const maxShow = state.activeCollection?.settings?.winnerCount || 3;
+      const top3 = [order[1], order[0], order[2]]; // 2nd, 1st, 3rd visual layout
+      const podiumMeta = [
+        { rank: 2, medal: '🥈', label: 'JUARA 2', height: 'md:min-h-[200px]', bg: 'from-slate-600 to-slate-700 border-slate-300' },
+        { rank: 1, medal: '🥇', label: 'JUARA 1', height: 'md:min-h-[245px]', bg: 'from-amber-500 to-orange-500 border-yellow-200 text-slate-950' },
+        { rank: 3, medal: '🥉', label: 'JUARA 3', height: 'md:min-h-[175px]', bg: 'from-amber-800 to-orange-900 border-amber-500' }
+      ];
+
+      top3.forEach((runner, idx) => {
+        const meta = podiumMeta[idx];
+        if (!runner || meta.rank > maxShow) {
+          podiumEl.appendChild(document.createElement('div'));
+          return;
+        }
+        const card = document.createElement('div');
+        card.className = `rounded-2xl border-2 bg-gradient-to-b p-4 flex flex-col items-center justify-center text-center shadow-xl ${meta.bg} ${meta.height}`;
+        const avatarHtml = runner.gifId && state.gifUrlCache.has(runner.gifId)
+          ? `<img src="${state.gifUrlCache.get(runner.gifId)}" class="w-full h-full object-contain" />`
+          : createNinjaSvg(runner.color);
+
+        card.innerHTML = `
+          <div class="text-3xl mb-1">${meta.medal}</div>
+          <div class="w-16 h-16 rounded-xl bg-white/85 p-1 mb-2 overflow-hidden shadow">${avatarHtml}</div>
+          <div class="font-display font-bold text-xs tracking-widest uppercase opacity-90">${meta.label}</div>
+          <div class="font-display font-bold text-xl leading-tight mt-0.5">${runner.name}</div>
+          <div class="text-xs font-mono font-bold mt-1 opacity-85">${runner.finishTime.toFixed(3)}s</div>
+        `;
+        podiumEl.appendChild(card);
+      });
+
+      const tbody = document.getElementById('result-ranking-tbody');
+      tbody.innerHTML = '';
+      order.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/50';
+        const avatarHtml = r.gifId && state.gifUrlCache.has(r.gifId)
+          ? `<img src="${state.gifUrlCache.get(r.gifId)}" class="w-8 h-8 object-contain rounded" />`
+          : `<div class="w-8 h-8">${createNinjaSvg(r.color)}</div>`;
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-display font-bold ${idx === 0 ? 'text-amber-300' : 'text-slate-300'}">#${idx + 1}</td>
+          <td class="py-2.5 px-3">${avatarHtml}</td>
+          <td class="py-2.5 px-3 font-semibold text-white">${r.name}</td>
+          <td class="py-2.5 px-3 text-right font-mono text-cyan-300">${r.finishTime.toFixed(3)}s</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function downloadRaceResultsCsv() {
+      const order = [...state.race.finishedOrder].sort((a, b) => a.finishTime - b.finishTime);
+      let csv = `Peringkat,Nama Peserta,Waktu Finish (s),Seed\n`;
+      order.forEach((r, idx) => {
+        csv += `${idx + 1},"${r.name.replace(/"/g, '""')}",${r.finishTime.toFixed(3)},${state.race.seed}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `hasil-balap-juwangi-${state.race.seed}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Hasil balapan berhasil diunduh (.CSV)!', 'success');
+    }
+
+    // =========================================================================
+    // 12. SETUP UI RENDERING & HANDLERS
+    // =========================================================================
+    async function renderSetupParticipants() {
+      const col = state.activeCollection;
+      if (!col) return;
+      document.getElementById('participant-count-label').textContent = col.participants.length;
+      document.getElementById('home-participant-summary').textContent = `${col.participants.length} Peserta Siap`;
+      document.getElementById('setup-collection-name').textContent = col.name;
+      document.querySelector('#active-collection-badge span').textContent = col.name;
+
+      const grid = document.getElementById('participants-grid');
+      grid.innerHTML = '';
+
+      for (let idx = 0; idx < col.participants.length; idx++) {
+        const p = col.participants[idx];
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl bg-slate-900/85 border border-slate-700 flex flex-col gap-2';
+
+        const previewBox = document.createElement('div');
+        previewBox.className = 'h-20 rounded-lg bg-slate-800/80 border border-slate-700 flex items-center justify-center p-1.5 overflow-hidden relative';
+        if (p.gifId) {
+          const url = await ensureGifUrl(p.gifId);
+          if (url) {
+            previewBox.innerHTML = `<img src="${url}" alt="${p.name}" class="max-h-full max-w-full object-contain" />`;
+          } else {
+            previewBox.innerHTML = createNinjaSvg(p.color);
+          }
+        } else {
+          previewBox.innerHTML = createNinjaSvg(p.color);
+        }
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = p.name;
+        nameInput.className = 'w-full px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-600 text-xs font-bold text-white focus:border-amber-400 focus:outline-none';
+        nameInput.addEventListener('change', () => {
+          p.name = nameInput.value.trim() || `Peserta ${idx + 1}`;
+          autoSaveActiveCollection();
+        });
+
+        const controls = document.createElement('div');
+        controls.className = 'flex items-center justify-between gap-1 text-[11px]';
+
+        const gifLabel = document.createElement('label');
+        gifLabel.className = 'px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer';
+        gifLabel.textContent = p.gifId ? '🔄 Ganti GIF' : '🎞️ Upload GIF';
+        const gifInput = document.createElement('input');
+        gifInput.type = 'file';
+        gifInput.accept = 'image/gif';
+        gifInput.className = 'hidden';
+        gifInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          await handleSingleGifUpload(p, file);
+        });
+        gifLabel.appendChild(gifInput);
+
+        const rightBtns = document.createElement('div');
+        rightBtns.className = 'flex items-center gap-1';
+
+        if (p.gifId) {
+          const delGifBtn = document.createElement('button');
+          delGifBtn.className = 'px-1.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-amber-300';
+          delGifBtn.title = 'Hapus GIF';
+          delGifBtn.textContent = '✖GIF';
+          delGifBtn.addEventListener('click', async () => {
+            const oldId = p.gifId;
+            p.gifId = null;
+            await autoSaveActiveCollection();
+            await releaseGifIfUnused(oldId);
+            renderSetupParticipants();
+          });
+          rightBtns.appendChild(delGifBtn);
+        }
+
+        const upBtn = document.createElement('button');
+        upBtn.className = 'px-1.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 disabled:opacity-40';
+        upBtn.textContent = '↑';
+        upBtn.disabled = idx === 0;
+        upBtn.addEventListener('click', async () => {
+          [col.participants[idx - 1], col.participants[idx]] = [col.participants[idx], col.participants[idx - 1]];
+          await autoSaveActiveCollection();
+          renderSetupParticipants();
+        });
+
+        const downBtn = document.createElement('button');
+        downBtn.className = 'px-1.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 disabled:opacity-40';
+        downBtn.textContent = '↓';
+        downBtn.disabled = idx === col.participants.length - 1;
+        downBtn.addEventListener('click', async () => {
+          [col.participants[idx + 1], col.participants[idx]] = [col.participants[idx], col.participants[idx + 1]];
+          await autoSaveActiveCollection();
+          renderSetupParticipants();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'px-1.5 py-1 rounded bg-rose-700 hover:bg-rose-600 text-white';
+        delBtn.textContent = '🗑️';
+        delBtn.addEventListener('click', async () => {
+          const oldId = p.gifId;
+          col.participants.splice(idx, 1);
+          await autoSaveActiveCollection();
+          await releaseGifIfUnused(oldId);
+          renderSetupParticipants();
+        });
+
+        rightBtns.append(upBtn, downBtn, delBtn);
+        controls.append(gifLabel, rightBtns);
+        card.append(previewBox, nameInput, controls);
+        grid.appendChild(card);
+      }
+    }
+
+    async function handleSingleGifUpload(participant, file) {
+      const indicator = document.getElementById('gif-upload-indicator');
+      indicator.classList.remove('hidden');
+      try {
+        await validateGifFile(file);
+        if (file.size > 25 * 1024 * 1024) {
+          showToast(`Peringatan: File ${file.name} sangat besar (${(file.size / 1048576).toFixed(1)} MB), pemrosesan mungkin lambat.`, 'warning');
+        }
+        const oldId = participant.gifId;
+        const gifId = uid('gif');
+        await db.saveGif(gifId, file, { name: file.name });
+        participant.gifId = gifId;
+        await autoSaveActiveCollection();
+        await releaseGifIfUnused(oldId);
+        await renderSetupParticipants();
+        showToast(`GIF untuk ${participant.name} berhasil disimpan!`, 'success');
+      } catch (err) {
+        showToast('Gagal memproses GIF: ' + err.message, 'error');
+      } finally {
+        indicator.classList.add('hidden');
+      }
+    }
+
+    function syncSettingsToUI() {
+      const col = state.activeCollection;
+      if (!col) return;
+      const s = col.settings;
+      const arena = getActiveArena();
+
+      document.getElementById('range-char-size').value = s.charSize;
+      document.getElementById('val-char-size').textContent = `${s.charSize}%`;
+      document.getElementById('range-name-size').value = s.nameSize;
+      document.getElementById('val-name-size').textContent = `${s.nameSize}%`;
+
+      document.getElementById('range-countdown-sec').value = s.countdownSec;
+      document.getElementById('val-countdown-sec').textContent = `${s.countdownSec} Detik`;
+      document.getElementById('range-base-speed').value = s.baseSpeed;
+      document.getElementById('val-base-speed').textContent = `${(s.baseSpeed / 100).toFixed(2)}x`;
+      document.getElementById('range-speed-variance').value = s.speedVariance;
+      document.getElementById('val-speed-variance').textContent = `${s.speedVariance}%`;
+      document.getElementById('range-obstacle-effect').value = s.obstacleEffect;
+      document.getElementById('val-obstacle-effect').textContent = `${s.obstacleEffect}%`;
+
+      document.getElementById('select-winner-count').value = String(s.winnerCount);
+      document.getElementById('select-aspect-ratio').value = s.aspectRatio;
+      document.getElementById('custom-ratio-wrap').classList.toggle('hidden', s.aspectRatio !== 'custom');
+      document.getElementById('input-custom-ratio').value = s.customAspectRatio || '21:9';
+      document.getElementById('select-visual-quality').value = s.visualQuality;
+
+      document.getElementById('range-master-vol').value = s.audioVolume;
+      document.getElementById('val-master-vol').textContent = `${s.audioVolume}%`;
+      document.getElementById('chk-music-on').checked = s.musicOn;
+      document.getElementById('chk-sfx-on').checked = s.sfxOn;
+      audio.setVolume(s.audioVolume / 100);
+      audio.musicOn = s.musicOn;
+      audio.sfxOn = s.sfxOn;
+
+      // Arena select
+      const arenaSel = document.getElementById('select-arena');
+      arenaSel.innerHTML = '';
+      col.arenas.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name;
+        if (a.id === arena.id) opt.selected = true;
+        arenaSel.appendChild(opt);
+      });
+
+      document.getElementById('select-arena-theme').value = arena.theme;
+      document.getElementById('chk-deco-spectators').checked = arena.decoSpectators;
+      document.getElementById('chk-deco-flags').checked = arena.decoFlags;
+      document.getElementById('chk-deco-signboard').checked = arena.decoSignboard;
+      document.getElementById('range-track-padding').value = arena.trackPadding;
+      document.getElementById('range-obs-1').value = arena.obs1Pos;
+      document.getElementById('val-obs-1').textContent = `${arena.obs1Pos}%`;
+      document.getElementById('range-obs-2').value = arena.obs2Pos;
+      document.getElementById('val-obs-2').textContent = `${arena.obs2Pos}%`;
+      document.getElementById('range-obs-3').value = arena.obs3Pos;
+      document.getElementById('val-obs-3').textContent = `${arena.obs3Pos}%`;
+    }
+
+    // =========================================================================
+    // 13. COLLECTION MANAGER MODAL
+    // =========================================================================
+    async function renderCollectionsModal() {
+      const list = document.getElementById('collections-list');
+      list.innerHTML = '';
+      state.collections.forEach((col) => {
+        const isActive = state.activeCollection && state.activeCollection.id === col.id;
+        const row = document.createElement('div');
+        row.className = `p-3 rounded-xl border flex flex-wrap items-center justify-between gap-2 ${isActive ? 'bg-indigo-950/70 border-indigo-400' : 'bg-slate-900/70 border-slate-700'}`;
+        row.innerHTML = `
+          <div>
+            <div class="font-display font-bold text-base text-white flex items-center gap-2">
+              ${col.name} ${isActive ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950">AKTIF</span>' : ''}
+            </div>
+            <div class="text-xs text-slate-400">${col.participants.length} peserta • ${col.arenas.length} arena</div>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button data-act="select" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold">Pilih</button>
+            <button data-act="rename" class="px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 text-xs font-bold">✏️ Nama</button>
+            <button data-act="duplicate" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold">📋 Duplikat</button>
+            <button data-act="export" class="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-bold">📤 Export</button>
+            <button data-act="delete" class="px-2.5 py-1 rounded-lg bg-rose-700 text-white text-xs font-bold">🗑️</button>
+          </div>
+        `;
+
+        row.querySelector('[data-act="select"]').addEventListener('click', async () => {
+          state.activeCollection = col;
+          syncSettingsToUI();
+          await renderSetupParticipants();
+          document.getElementById('modal-collections').classList.add('hidden');
+          showToast(`Koleksi "${col.name}" diaktifkan!`, 'success');
+        });
+
+        row.querySelector('[data-act="rename"]').addEventListener('click', async () => {
+          const newName = await openDialog({ title: 'Ganti Nama Koleksi', message: 'Masukkan nama koleksi baru:', showInput: true, defaultValue: col.name });
+          if (newName) {
+            col.name = newName;
+            await db.saveCollection(col);
+            renderCollectionsModal();
+            renderSetupParticipants();
+          }
+        });
+
+        row.querySelector('[data-act="duplicate"]').addEventListener('click', async () => {
+          const copy = JSON.parse(JSON.stringify(col));
+          copy.id = uid('col');
+          copy.name = `${col.name} (Salinan)`;
+          await db.saveCollection(copy);
+          state.collections.push(copy);
+          renderCollectionsModal();
+          showToast('Koleksi berhasil diduplikasi!', 'success');
+        });
+
+        row.querySelector('[data-act="export"]').addEventListener('click', async () => {
+          await exportCollectionJson(col);
+        });
+
+        row.querySelector('[data-act="delete"]').addEventListener('click', async () => {
+          if (state.collections.length <= 1) {
+            showToast('Minimal harus ada 1 koleksi tersimpan.', 'warning');
+            return;
+          }
+          const ok = await openDialog({ title: 'Hapus Koleksi?', message: `Yakin ingin menghapus koleksi "${col.name}"? Tindakan ini tidak dapat dibatalkan.`, confirmText: 'Ya, Hapus', confirmClass: 'bg-rose-600' });
+          if (ok) {
+            await db.deleteCollection(col.id);
+            state.collections = state.collections.filter(c => c.id !== col.id);
+            if (state.activeCollection.id === col.id) {
+              state.activeCollection = state.collections[0];
+              syncSettingsToUI();
+              renderSetupParticipants();
+            }
+            renderCollectionsModal();
+            showToast('Koleksi dihapus.', 'info');
+          }
+        });
+
+        list.appendChild(row);
+      });
+      checkStorageQuota();
+    }
+
+    async function exportCollectionJson(col) {
+      const exportObj = JSON.parse(JSON.stringify(col));
+      exportObj.embeddedGifs = {};
+      for (const p of exportObj.participants) {
+        if (p.gifId) {
+          const rec = await db.getGif(p.gifId);
+          if (rec && rec.blob) {
+            const b64 = await new Promise((res) => {
+              const reader = new FileReader();
+              reader.onload = () => res(reader.result);
+              reader.readAsDataURL(rec.blob);
+            });
+            exportObj.embeddedGifs[p.gifId] = b64;
+          }
+        }
+      }
+      const blob = new Blob([JSON.stringify(exportObj)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `koleksi-${col.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Koleksi berhasil diekspor!', 'success');
+    }
+
+    // =========================================================================
+    // 14. NAVIGATION & EVENT WIRING
+    // =========================================================================
+    function navigateTo(page) {
+      if (state.currentPage === 'arena' && page !== 'arena') {
+        clearCountdownTimer();
+        if (state.race.rafId) cancelAnimationFrame(state.race.rafId);
+        audio.stopMusic();
+      }
+      state.currentPage = page;
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`page-${page}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        const active = btn.dataset.nav === page;
+        btn.classList.toggle('bg-amber-500', active);
+        btn.classList.toggle('text-slate-950', active);
+        btn.classList.toggle('bg-slate-800', !active);
+        btn.classList.toggle('text-slate-200', !active);
+      });
+
+      if (page === 'arena') prepareArenaPage();
+    }
+
+    function wireAllEvents() {
+      // Unlock audio on first gesture & start home music if on home
+      document.body.addEventListener('pointerdown', () => {
+        audio.unlock();
+        if (state.currentPage === 'home' && audio.musicOn && !audio.currentBgm) {
+          audio.startMusic('home');
+        }
+      }, { once: true });
+
+      // Nav
+      document.getElementById('nav-brand-btn').addEventListener('click', () => navigateTo('home'));
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo(btn.dataset.nav));
+      });
+
+      // Home Buttons
+      document.getElementById('home-start-btn').addEventListener('click', () => navigateTo('arena'));
+      document.getElementById('home-setup-btn').addEventListener('click', () => navigateTo('setup'));
+      document.getElementById('home-collections-btn').addEventListener('click', () => {
+        renderCollectionsModal();
+        document.getElementById('modal-collections').classList.remove('hidden');
+      });
+      document.getElementById('home-guide-btn').addEventListener('click', () => {
+        document.getElementById('modal-guide').classList.remove('hidden');
+      });
+
+      // Modals Close
+      document.getElementById('close-collections-modal').addEventListener('click', () => document.getElementById('modal-collections').classList.add('hidden'));
+      document.getElementById('close-guide-modal').addEventListener('click', () => document.getElementById('modal-guide').classList.add('hidden'));
+
+      // Setup Tabs
+      document.querySelectorAll('.setup-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.setup-tab-btn').forEach(b => {
+            b.classList.remove('bg-amber-500', 'text-slate-950');
+            b.classList.add('bg-slate-800', 'text-slate-300');
+          });
+          btn.classList.add('bg-amber-500', 'text-slate-950');
+          btn.classList.remove('bg-slate-800', 'text-slate-300');
+          document.querySelectorAll('.setup-tab-panel').forEach(p => p.classList.add('hidden'));
+          document.getElementById(`setup-tab-${btn.dataset.setupTab}`).classList.remove('hidden');
+        });
+      });
+
+      document.getElementById('setup-open-collections-btn').addEventListener('click', () => {
+        renderCollectionsModal();
+        document.getElementById('modal-collections').classList.remove('hidden');
+      });
+      document.getElementById('setup-preview-btn').addEventListener('click', () => navigateTo('arena'));
+      document.getElementById('setup-start-race-btn').addEventListener('click', () => {
+        navigateTo('arena');
+        setTimeout(() => startCountdownAndRace(), 120);
+      });
+
+      // Add Single Participant
+      document.getElementById('btn-add-single').addEventListener('click', async () => {
+        const inp = document.getElementById('input-single-name');
+        const name = inp.value.trim();
+        if (!name) return;
+        const col = state.activeCollection;
+        col.participants.push({
+          id: uid('p'),
+          name,
+          gifId: null,
+          color: NINJA_COLORS[col.participants.length % NINJA_COLORS.length]
+        });
+        inp.value = '';
+        await autoSaveActiveCollection();
+        renderSetupParticipants();
+      });
+
+      // Add Bulk Participants
+      document.getElementById('btn-add-bulk').addEventListener('click', async () => {
+        const ta = document.getElementById('input-bulk-names');
+        const lines = ta.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        if (!lines.length) return;
+        const col = state.activeCollection;
+        lines.forEach(name => {
+          col.participants.push({
+            id: uid('p'),
+            name,
+            gifId: null,
+            color: NINJA_COLORS[col.participants.length % NINJA_COLORS.length]
+          });
+        });
+        ta.value = '';
+        await autoSaveActiveCollection();
+        renderSetupParticipants();
+        showToast(`${lines.length} peserta berhasil ditambahkan!`, 'success');
+      });
+
+      // Import Names from TXT/CSV
+      document.getElementById('input-import-names-file').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        const names = text.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+        const col = state.activeCollection;
+        names.forEach(name => {
+          col.participants.push({
+            id: uid('p'),
+            name,
+            gifId: null,
+            color: NINJA_COLORS[col.participants.length % NINJA_COLORS.length]
+          });
+        });
+        await autoSaveActiveCollection();
+        renderSetupParticipants();
+        showToast(`${names.length} nama diimpor dari ${file.name}!`, 'success');
+      });
+
+      // Bulk GIF Upload with validation
+      document.getElementById('input-bulk-gifs').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const indicator = document.getElementById('gif-upload-indicator');
+        indicator.classList.remove('hidden');
+        const col = state.activeCollection;
+        let okCount = 0;
+        for (const f of files) {
+          try {
+            await validateGifFile(f);
+            const gifId = uid('gif');
+            await db.saveGif(gifId, f, { name: f.name });
+            col.participants.push({
+              id: uid('p'),
+              name: f.name.replace(/\.gif$/i, ''),
+              gifId,
+              color: NINJA_COLORS[col.participants.length % NINJA_COLORS.length]
+            });
+            okCount++;
+          } catch (err) {
+            showToast(err.message, 'error');
+          }
+        }
+        indicator.classList.add('hidden');
+        if (okCount > 0) {
+          await autoSaveActiveCollection();
+          renderSetupParticipants();
+          showToast(`${okCount} GIF berhasil diunggah sebagai peserta!`, 'success');
+        }
+      });
+
+      // Clear All Participants
+      document.getElementById('btn-clear-all-participants').addEventListener('click', async () => {
+        const ok = await openDialog({ title: 'Hapus Semua Peserta?', message: 'Semua peserta pada koleksi ini akan dihapus.', confirmText: 'Hapus Semua', confirmClass: 'bg-rose-600' });
+        if (ok) {
+          state.activeCollection.participants = [];
+          await autoSaveActiveCollection();
+          renderSetupParticipants();
+        }
+      });
+
+      // Sliders & Settings bindings
+      const bindSettingRange = (id, key, labelId, fmt) => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          const val = Number(e.target.value);
+          state.activeCollection.settings[key] = val;
+          document.getElementById(labelId).textContent = fmt(val);
+          autoSaveActiveCollection();
+        });
+      };
+      bindSettingRange('range-char-size', 'charSize', 'val-char-size', v => `${v}%`);
+      bindSettingRange('range-name-size', 'nameSize', 'val-name-size', v => `${v}%`);
+      bindSettingRange('range-countdown-sec', 'countdownSec', 'val-countdown-sec', v => `${v} Detik`);
+      bindSettingRange('range-base-speed', 'baseSpeed', 'val-base-speed', v => `${(v / 100).toFixed(2)}x`);
+      bindSettingRange('range-speed-variance', 'speedVariance', 'val-speed-variance', v => `${v}%`);
+      bindSettingRange('range-obstacle-effect', 'obstacleEffect', 'val-obstacle-effect', v => `${v}%`);
+
+      document.getElementById('select-winner-count').addEventListener('change', (e) => {
+        state.activeCollection.settings.winnerCount = Number(e.target.value);
+        autoSaveActiveCollection();
+      });
+      document.getElementById('select-aspect-ratio').addEventListener('change', (e) => {
+        state.activeCollection.settings.aspectRatio = e.target.value;
+        document.getElementById('custom-ratio-wrap').classList.toggle('hidden', e.target.value !== 'custom');
+        autoSaveActiveCollection();
+      });
+      document.getElementById('input-custom-ratio').addEventListener('change', (e) => {
+        state.activeCollection.settings.customAspectRatio = e.target.value.trim() || '21:9';
+        autoSaveActiveCollection();
+      });
+      document.getElementById('select-visual-quality').addEventListener('change', (e) => {
+        state.activeCollection.settings.visualQuality = e.target.value;
+        autoSaveActiveCollection();
+      });
+
+      // Arena Settings
+      document.getElementById('select-arena').addEventListener('change', (e) => {
+        state.activeCollection.activeArenaId = e.target.value;
+        autoSaveActiveCollection();
+        syncSettingsToUI();
+      });
+      document.getElementById('btn-new-arena').addEventListener('click', async () => {
+        const name = await openDialog({ title: 'Buat Arena Baru', message: 'Masukkan nama arena:', showInput: true, defaultValue: `Lapangan Gebyok ${state.activeCollection.arenas.length + 1}` });
+        if (name) {
+          const a = createDefaultArena(name);
+          state.activeCollection.arenas.push(a);
+          state.activeCollection.activeArenaId = a.id;
+          await autoSaveActiveCollection();
+          syncSettingsToUI();
+        }
+      });
+      document.getElementById('btn-rename-arena').addEventListener('click', async () => {
+        const arena = getActiveArena();
+        const name = await openDialog({ title: 'Ganti Nama Arena', message: 'Nama baru:', showInput: true, defaultValue: arena.name });
+        if (name) {
+          arena.name = name;
+          await autoSaveActiveCollection();
+          syncSettingsToUI();
+        }
+      });
+      document.getElementById('select-arena-theme').addEventListener('change', (e) => {
+        getActiveArena().theme = e.target.value;
+        autoSaveActiveCollection();
+      });
+      ['spectators', 'flags', 'signboard'].forEach(k => {
+        const mapKey = `deco${k.charAt(0).toUpperCase() + k.slice(1)}`;
+        document.getElementById(`chk-deco-${k}`).addEventListener('change', (e) => {
+          getActiveArena()[mapKey] = e.target.checked;
+          autoSaveActiveCollection();
+        });
+      });
+      document.getElementById('range-track-padding').addEventListener('input', (e) => {
+        const val = Number(e.target.value);
+        getActiveArena().trackPadding = val;
+        document.getElementById('val-track-padding').textContent = val === 1 ? 'Padat' : val === 2 ? 'Normal' : 'Lega';
+        autoSaveActiveCollection();
+      });
+      [1, 2, 3].forEach(num => {
+        document.getElementById(`range-obs-${num}`).addEventListener('input', (e) => {
+          const val = Number(e.target.value);
+          getActiveArena()[`obs${num}Pos`] = val;
+          document.getElementById(`val-obs-${num}`).textContent = `${val}%`;
+          autoSaveActiveCollection();
+        });
+      });
+
+      // Audio Settings
+      const toggleAudioAll = () => {
+        audio.unlock();
+        const s = state.activeCollection.settings;
+        s.musicOn = !s.musicOn;
+        s.sfxOn = s.musicOn;
+        audio.musicOn = s.musicOn;
+        audio.sfxOn = s.sfxOn;
+        if (!s.musicOn) audio.stopMusic();
+        const icon = s.musicOn ? '🔊' : '🔇';
+        document.getElementById('header-audio-btn').textContent = icon;
+        document.getElementById('op-audio-btn').textContent = icon;
+        syncSettingsToUI();
+        autoSaveActiveCollection();
+      };
+      document.getElementById('header-audio-btn').addEventListener('click', toggleAudioAll);
+      document.getElementById('op-audio-btn').addEventListener('click', toggleAudioAll);
+      document.getElementById('range-master-vol').addEventListener('input', (e) => {
+        const v = Number(e.target.value);
+        state.activeCollection.settings.audioVolume = v;
+        document.getElementById('val-master-vol').textContent = `${v}%`;
+        audio.setVolume(v / 100);
+        autoSaveActiveCollection();
+      });
+      document.getElementById('chk-music-on').addEventListener('change', (e) => {
+        state.activeCollection.settings.musicOn = e.target.checked;
+        audio.musicOn = e.target.checked;
+        if (!e.target.checked) audio.stopMusic();
+        autoSaveActiveCollection();
+      });
+      document.getElementById('chk-sfx-on').addEventListener('change', (e) => {
+        state.activeCollection.settings.sfxOn = e.target.checked;
+        audio.sfxOn = e.target.checked;
+        autoSaveActiveCollection();
+      });
+      document.getElementById('btn-test-audio').addEventListener('click', () => {
+        audio.unlock();
+        audio.playCountdown(1);
+        setTimeout(() => audio.playCountdown(0), 300);
+      });
+
+      // Operator Controls
+      document.getElementById('op-start-btn').addEventListener('click', startCountdownAndRace);
+      document.getElementById('op-pause-btn').addEventListener('click', pauseRace);
+      document.getElementById('op-resume-btn').addEventListener('click', resumeRace);
+      document.getElementById('paused-resume-btn').addEventListener('click', resumeRace);
+      document.getElementById('op-restart-btn').addEventListener('click', () => {
+        prepareArenaPage();
+        startCountdownAndRace();
+      });
+      document.getElementById('op-cancel-btn').addEventListener('click', () => {
+        prepareArenaPage();
+        audio.stopMusic();
+      });
+      document.getElementById('op-setup-btn').addEventListener('click', () => navigateTo('setup'));
+
+      // Fullscreen Toggle
+      const toggleFullscreen = () => {
+        const target = document.getElementById('race-stage-wrapper');
+        if (!document.fullscreenElement) {
+          target.requestFullscreen?.().catch(() => showToast('Fullscreen tidak diizinkan browser.', 'warning'));
+        } else {
+          document.exitFullscreen?.();
+        }
+      };
+      document.getElementById('op-fullscreen-btn').addEventListener('click', toggleFullscreen);
+      document.getElementById('op-touch-toggle-btn').addEventListener('click', () => {
+        document.getElementById('operator-bar').classList.toggle('force-show');
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const isFs = Boolean(document.fullscreenElement);
+        document.getElementById('op-touch-toggle-btn').classList.toggle('hidden', !isFs);
+        if (!isFs) document.getElementById('operator-bar').classList.remove('force-show');
+        setTimeout(() => { if (state.currentPage === 'arena') renderRaceFrame(); }, 100);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'o' && document.fullscreenElement) {
+          document.getElementById('operator-bar').classList.toggle('force-show');
+        }
+      });
+      document.getElementById('setup-fullscreen-btn').addEventListener('click', () => {
+        navigateTo('arena');
+        setTimeout(toggleFullscreen, 150);
+      });
+
+      // Result Buttons
+      document.getElementById('result-rematch-btn').addEventListener('click', () => {
+        navigateTo('arena');
+        setTimeout(() => startCountdownAndRace(), 150);
+      });
+      document.getElementById('result-setup-btn').addEventListener('click', () => navigateTo('setup'));
+      document.getElementById('result-save-btn').addEventListener('click', downloadRaceResultsCsv);
+
+      // Collection Modal Actions
+      document.getElementById('btn-create-collection').addEventListener('click', async () => {
+        const inp = document.getElementById('input-new-collection-name');
+        const name = inp.value.trim();
+        if (!name) return;
+        const col = createDefaultCollection(name);
+        await db.saveCollection(col);
+        state.collections.push(col);
+        state.activeCollection = col;
+        inp.value = '';
+        renderCollectionsModal();
+        syncSettingsToUI();
+        renderSetupParticipants();
+        showToast(`Koleksi "${name}" dibuat!`, 'success');
+      });
+
+      document.getElementById('input-import-collection').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const data = JSON.parse(await file.text());
+          data.id = uid('col');
+          if (data.embeddedGifs) {
+            for (const [oldId, b64] of Object.entries(data.embeddedGifs)) {
+              const res = await fetch(b64);
+              const blob = await res.blob();
+              await db.saveGif(oldId, blob, { name: `${oldId}.gif` });
+            }
+            delete data.embeddedGifs;
+          }
+          await db.saveCollection(data);
+          state.collections.push(data);
+          state.activeCollection = data;
+          renderCollectionsModal();
+          syncSettingsToUI();
+          renderSetupParticipants();
+          showToast(`Koleksi "${data.name}" berhasil diimpor!`, 'success');
+        } catch (err) {
+          showToast('Gagal mengimpor koleksi: ' + err.message, 'error');
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (state.currentPage === 'arena') {
+          applyAspectRatioSetting();
+          renderRaceFrame();
+        }
+      });
+    }
+
+    // =========================================================================
+    // 15. INITIALIZATION
+    // =========================================================================
+    window.addEventListener('load', async () => {
+      try {
+        let cols = await db.getAllCollections();
+        if (!cols.length) {
+          const def = createDefaultCollection('Balap Desa');
+          await db.saveCollection(def);
+          cols = [def];
+        }
+        state.collections = cols;
+        state.activeCollection = cols[0];
+      } catch (e) {
+        console.warn('IndexedDB fallback in-memory:', e);
+        const def = createDefaultCollection('Balap Desa');
+        state.collections = [def];
+        state.activeCollection = def;
+      }
+
+      wireAllEvents();
+      syncSettingsToUI();
+      await renderSetupParticipants();
+      checkStorageQuota();
+      renderHomeHero();
+    });
+  </script>
+</body>
+</html>
